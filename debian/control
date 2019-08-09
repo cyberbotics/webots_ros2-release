@@ -1,0 +1,12 @@
+Source: ros-crystal-webots-ros2
+Section: misc
+Priority: extra
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-crystal-ament-copyright, ros-crystal-ament-flake8, ros-crystal-ament-pep257, ros-crystal-ros-workspace, python3-all, python3-setuptools
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-crystal-webots-ros2
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-crystal-builtin-interfaces, ros-crystal-control-msgs, ros-crystal-rclpy, ros-crystal-rosgraph-msgs, ros-crystal-sensor-msgs, ros-crystal-std-msgs, ros-crystal-trajectory-msgs, ros-crystal-ros-workspace
+Description: Interface between Webots and ROS2
