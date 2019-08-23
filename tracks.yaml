@@ -18,8 +18,8 @@ tracks:
     patches: null
     release_inc: '6'
     release_repo_url: https://github.com/cyberbotics/webots_ros2-release.git
-    release_tag: 0.0.1
+    release_tag: 0.0.2
     ros_distro: crystal
     vcs_type: git
     vcs_uri: https://github.com/omichel/webots_ros2.git
-    version: 0.0.1
+    version: 0.0.2
