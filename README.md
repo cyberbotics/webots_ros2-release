@@ -1,3 +1,32 @@
+## webots_ros2_desktop (crystal) - 0.0.2-1
+
+The packages in the `webots_ros2_desktop` repository were released into the `crystal` distro by running `/usr/bin/bloom-release --rosdistro crystal --track crystal webots_ros2_desktop --edit` on `Fri, 23 Aug 2019 10:30:16 -0000`
+
+These packages were released:
+- `webots_ros2`
+- `webots_ros2_core`
+- `webots_ros2_desktop`
+- `webots_ros2_examples`
+- `webots_ros2_msgs`
+- `webots_ros2_universal_robot`
+
+Version of package(s) in repository `webots_ros2_desktop`:
+
+- upstream repository: https://github.com/omichel/webots_ros2.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `0.0.1-6`
+- new version: `0.0.2-1`
+
+Versions of tools used:
+
+- bloom version: `0.8.0`
+- catkin_pkg version: `0.4.13`
+- rosdep version: `0.15.2`
+- rosdistro version: `0.7.4`
+- vcstools version: `0.1.42`
+
+
 ## webots_ros2 (crystal) - 0.0.1-6
 
 The packages in the `webots_ros2` repository were released into the `crystal` distro by running `/usr/bin/bloom-release --rosdistro crystal --track crystal webots_ros2 --edit` on `Fri, 23 Aug 2019 10:11:26 -0000`
