@@ -21,23 +21,28 @@ import os
 import launch
 import launch_ros.actions
 
-from webots_ros2_core.utils import append_webots_lib_to_path
+from webots_ros2_core.utils import ControllerLauncher
+
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
+    # Webots
     arguments = ['--mode=realtime', '--world=' +
-                 os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                 os.path.join(get_package_share_directory('webots_ros2_universal_robot'),
                               'worlds', 'universal_robot.wbt')]
     webots = launch_ros.actions.Node(package='webots_ros2_core', node_executable='webots_launcher',
                                      arguments=arguments, output='screen')
-    controller = launch_ros.actions.Node(package='webots_ros2_universal_robot',
-                                         node_executable='universal_robot',
-                                         output='screen')
-    append_webots_lib_to_path()
+    # Controller node
+    synchronization = launch.substitutions.LaunchConfiguration('synchronization', default=False)
+    controller = ControllerLauncher(package='webots_ros2_universal_robot',
+                                    node_executable='universal_robot',
+                                    parameters=[{'synchronization': synchronization}],
+                                    output='screen')
     return launch.LaunchDescription([
         webots,
         controller,
-        # Shutdown launch when webots exits.
+        # Shutdown launch when Webots exits.
         launch.actions.RegisterEventHandler(
             event_handler=launch.event_handlers.OnProcessExit(
                 target_action=webots,

@@ -16,11 +16,13 @@
 
 """Base node class."""
 
+import argparse
+import os
 import sys
 
-from time import sleep
+from webots_ros2_core.utils import append_webots_python_lib_to_path
 
-from webots_ros2_core.utils import get_webots_version, append_webots_python_lib_to_path
+from webots_ros2_msgs.srv import SetInt
 
 from rosgraph_msgs.msg import Clock
 
@@ -28,7 +30,7 @@ from rclpy.node import Node
 
 try:
     append_webots_python_lib_to_path()
-    from controller import Robot
+    from controller import Supervisor
 except Exception as e:
     sys.stderr.write('"WEBOTS_HOME" is not correctly set.')
     raise e
@@ -36,28 +38,48 @@ except Exception as e:
 
 class WebotsNode(Node):
 
-    def __init__(self, name):
+    def __init__(self, name, args=None):
         super().__init__(name)
-        if get_webots_version() == 'R2019b':
-            sleep(10)  # TODO: wait to make sure that Webots is started
-        self.robot = Robot()
+        self.declare_parameter('synchronization', False)
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--webots-robot-name', dest='webotsRobotName', default='',
+                            help='Specifies the "name" field of the robot in Webots.')
+        # use 'parse_known_args' because ROS2 adds a lot of internal arguments
+        arguments, unknown = parser.parse_known_args()
+        if arguments.webotsRobotName:
+            os.environ['WEBOTS_ROBOT_NAME'] = arguments.webotsRobotName
+        self.robot = Supervisor()
         self.timestep = int(self.robot.getBasicTimeStep())
-        self.clockPublisher = self.create_publisher(Clock, 'topic', 10)
+        self.clockPublisher = self.create_publisher(Clock, 'clock', 10)
         timer_period = 0.001 * self.timestep  # seconds
+        self.stepService = self.create_service(SetInt, 'step', self.step_callback)
         self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.sec = 0
+        self.nanosec = 0
 
-    def timer_callback(self):
-        if self.robot is None:
+    def step(self, ms):
+        if self.robot is None or self.get_parameter('synchronization').value:
             return
-        # Publish clock
-        msg = Clock()
-        time = self.robot.getTime()
-        msg.clock.sec = int(time)
-        # round prevents precision issues that can cause problems with ROS timers
-        msg.clock.nanosec = int(round(1000 * (time - msg.clock.sec)) * 1.0e+6)
-        self.clockPublisher.publish(msg)
         # Robot step
-        if self.robot.step(self.timestep) < 0.0:
+        if self.robot.step(ms) < 0.0:
             del self.robot
             self.robot = None
             sys.exit(0)
+        # Update time
+        time = self.robot.getTime()
+        self.sec = int(time)
+        # rounding prevents precision issues that can cause problems with ROS timers
+        self.nanosec = int(round(1000 * (time - self.sec)) * 1.0e+6)
+        # Publish clock
+        msg = Clock()
+        msg.clock.sec = self.sec
+        msg.clock.nanosec = self.nanosec
+        self.clockPublisher.publish(msg)
+
+    def timer_callback(self):
+        self.step(self.timestep)
+
+    def step_callback(self, request, response):
+        self.step(request.value)
+        response.success = True
+        return response
