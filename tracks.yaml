@@ -21,7 +21,7 @@ tracks:
     release_tag: 0.0.2
     ros_distro: crystal
     vcs_type: git
-    vcs_uri: https://github.com/omichel/webots_ros2.git
+    vcs_uri: https://github.com/cyberbotics/webots_ros2.git
     version: 0.0.2
   eloquent:
     actions:
@@ -45,7 +45,7 @@ tracks:
     release_tag: 0.0.3
     ros_distro: eloquent
     vcs_type: git
-    vcs_uri: https://github.com/omichel/webots_ros2.git
+    vcs_uri: https://github.com/cyberbotics/webots_ros2.git
     version: 0.0.3
   foxy:
     actions:
@@ -69,5 +69,5 @@ tracks:
     release_tag: 0.0.3
     ros_distro: foxy
     vcs_type: git
-    vcs_uri: https://github.com/omichel/webots_ros2.git
+    vcs_uri: https://github.com/cyberbotics/webots_ros2.git
     version: 0.0.3
