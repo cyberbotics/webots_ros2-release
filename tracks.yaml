@@ -66,8 +66,8 @@ tracks:
     patches: null
     release_inc: '1'
     release_repo_url: https://github.com/cyberbotics/webots_ros2-release.git
-    release_tag: 0.0.3
+    release_tag: 0.0.4
     ros_distro: foxy
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 0.0.3
+    version: 0.0.4
