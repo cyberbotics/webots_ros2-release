@@ -193,7 +193,7 @@ class Limit():
         """Initializatization."""
         self.lower = 0.0
         self.upper = 0.0
-        self.effort = 0.0
+        self.effort = 10000  # if not specified in the URDF, there is no limit
         self.velocity = 0.0
 
 
@@ -702,7 +702,7 @@ def getVisual(link, node, path):
             extension = os.path.splitext(meshfile)[1].lower()
             if extension == '.dae':
                 getColladaMesh(meshfile, visual, link)
-            elif extension == '.stl' or extension == '.obj':
+            elif extension in ['.stl', '.obj']:
                 name = os.path.splitext(os.path.basename(meshfile))[0]
                 if name in Geometry.reference:
                     visual.geometry = Geometry.reference[name]
@@ -761,10 +761,10 @@ def getCollision(link, node, path):
             if meshfile.count('package'):
                 idx0 = meshfile.find('package://')
                 meshfile = meshfile[idx0 + len('package://'):]
-            extension = os.path.splitext(meshfile)[1]
+            extension = os.path.splitext(meshfile)[1].lower()
             if extension == '.dae':
                 collision.geometry.collada = getColladaMesh(meshfile, collision, link)
-            elif extension == '.stl' or extension == '.obj':
+            elif extension in ['.stl', '.obj']:
                 name = os.path.splitext(os.path.basename(meshfile))[0]
                 if name in Geometry.reference:
                     collision.geometry = Geometry.reference[name]
@@ -822,7 +822,8 @@ def getLimit(node):
         limit.lower = float(limitElement.getAttribute('lower'))
     if limitElement.getAttribute('upper'):
         limit.upper = float(limitElement.getAttribute('upper'))
-    limit.effort = float(limitElement.getAttribute('effort'))
+    if float(limitElement.getAttribute('effort')) != 0:
+        limit.effort = float(limitElement.getAttribute('effort'))
     limit.velocity = float(limitElement.getAttribute('velocity'))
     return limit
 
@@ -850,6 +851,8 @@ def getLink(node, path):
         getVisual(link, node, path)
     if hasElement(node, 'collision'):
         getCollision(link, node, path)
+    if not any([hasElement(node, 'inertial'), hasElement(node, 'visual'), hasElement(node, 'collision')]):
+        link.inertia.mass = None
     return link
 
 
