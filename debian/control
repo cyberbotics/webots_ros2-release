@@ -1,0 +1,12 @@
+Source: ros-eloquent-webots-ros2-desktop
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-eloquent-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-webots-ros2-desktop
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-eloquent-builtin-interfaces, ros-eloquent-rclpy, ros-eloquent-std-msgs, ros-eloquent-webots-ros2, ros-eloquent-ros-workspace
+Description: Interface between Webots and ROS2 including the Webots package
