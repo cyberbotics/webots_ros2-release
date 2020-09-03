@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 1996-2019 Cyberbotics Ltd.
+# Copyright 1996-2020 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 """Launch Webots and the controller."""
 
 import os
+
+from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch import LaunchDescription
+from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -32,10 +34,20 @@ def generate_launch_description():
         ),
         launch_arguments={
             'executable': 'webots_robotic_arm_node',
-            'world': os.path.join(package_dir, 'worlds', 'universal_robot.wbt')
+            'world': os.path.join(package_dir, 'worlds', 'universal_robot_rviz.wbt')
         }.items()
     )
 
+    # Rviz node
+    rviz_config = os.path.join(package_dir, 'resource', 'view_robot_dynamic.rviz')
+    rviz = Node(
+        package='rviz2',
+        node_executable='rviz2',
+        output='log',
+        arguments=['--display-config=' + rviz_config]
+    )
+
     return LaunchDescription([
+        rviz,
         webots
     ])
