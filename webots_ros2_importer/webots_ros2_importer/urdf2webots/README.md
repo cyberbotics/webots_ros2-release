@@ -27,14 +27,28 @@ pip install -r requirements.txt
 ### From pip
 
 ```
-python -m urdf2webots.importer --input=someRobot.urdf [--output=outputFile] [--box-collision] [--normal] [--disable-mesh-optimization]
+python -m urdf2webots.importer --input=someRobot.urdf [--output=outputFile] [--box-collision] [--normal] [--disable-mesh-optimization] [--multi-file] [--static-base] [--tool-slot=linkName] [--help]
 ```
 
 ### From Sources
 
 ```
-python demo.py --input=someRobot.urdf [--output=outputFile] [--box-collision] [--normal] [--disable-mesh-optimization]
+python demo.py --input=someRobot.urdf [--output=outputFile] [--box-collision] [--normal] [--disable-mesh-optimization] [--multi-file] [--static-base] [--tool-slot=linkName] [--help]
 ```
+
+### Arguments
+
+The script accepts the following arguments:
+  - **-h, --help**: Show the help message and exit.
+  - **--input=INFILE**: Specifies the urdf file to convert.
+  - **--output=OUTFILE**: Specifies the name of the resulting PROTO file.
+  - **--normal**: If set, the normals are exported if present in the URDF definition.
+  - **--box-collision**: If set, the bounding objects are approximated using boxes.
+  - **--disable-mesh-optimization**: If set, the duplicated vertices are not removed from the meshes (this can speed up a lot the conversion).
+  - **--multi-file**: If set, the mesh files are exported as separated PROTO files.
+  - **--static-base**: If set, the base link will have the option to be static (disable physics)
+  - **--tool-slot=LinkName**: Specify the link that you want to add a tool slot to (exact link name from urdf).
+  - **--rotation="0 1 0 0"**: Set the rotation field of your PROTO file. If your URDF file uses the z-axis as 'up', use `--rotation="1 0 0 -1.5708"`.
 
 ### In your Python Code
 
@@ -43,13 +57,15 @@ from urdf2webots.importer import convert2urdf
 convert2urdf('MY_PATH/MY_URDF.urd')
 ```
 
-### Arguments
+### In-Depth Tutorial
+Check out [this tutorial](./docs/tutorial.md) for a more in-depth, step by step instruction, on how to:
+- Generate a URDF file from a ROS repository.
+- Convert your URDF file to a Webots PROTO file.
+- Load your converted model into Webots and make final adjustments.
 
-Outputs: someRobot_textures (folder), someRobot.proto.  
-Use in Webots: put the outputs in the protos folder of your Webots project.
 
 ## Notes
-This tool have been tested using Webots R2020a on Ubuntu16.04 and Windows.  
+This tool have been tested using Webots R2020b on Ubuntu16.04 and Windows.  
 You can find the sources of these URDF files here:  
   - universal robot: https://github.com/ros-industrial/universal_robot/tree/kinetic-devel/ur_description  
   - pr2 robot: https://github.com/PR2/pr2_common/tree/kinetic-devel/pr2_description  
