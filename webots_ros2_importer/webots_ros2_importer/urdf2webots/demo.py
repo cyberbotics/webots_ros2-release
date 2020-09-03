@@ -17,6 +17,15 @@ optParser.add_option('--box-collision', dest='boxCollision', action='store_true'
 optParser.add_option('--disable-mesh-optimization', dest='disableMeshOptimization', action='store_true', default=False,
                      help='If set, the duplicated vertices are not removed from the meshes (this can speed up a lot the '
                      'conversion).')
+optParser.add_option('--multi-file', dest='enableMultiFile', action='store_true', default=False,
+                     help='If set, the mesh files are exported as separated PROTO files')
+optParser.add_option('--static-base', dest='staticBase', action='store_true', default=False,
+                     help='If set, the base link will have the option to be static (disable physics)')
+optParser.add_option('--tool-slot', dest='toolSlot', default=None,
+                     help='Specify the link that you want to add a tool slot to (exact link name from urdf)')
+optParser.add_option('--rotation', dest='initRotation', default='0 1 0 0',
+                     help='Set the rotation field of your PROTO file.)')
 options, args = optParser.parse_args()
 
-convert2urdf(options.inFile, options.outFile, options.normal, options.boxCollision, options.disableMeshOptimization)
+convert2urdf(options.inFile, options.outFile, options.normal, options.boxCollision, options.disableMeshOptimization,
+             options.enableMultiFile, options.staticBase, options.toolSlot, options.initRotation)
