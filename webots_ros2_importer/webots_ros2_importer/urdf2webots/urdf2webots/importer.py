@@ -46,11 +46,17 @@ def mkdirSafe(directory):
             print('Directory "' + directory + '" already exists!')
 
 
-def convert2urdf(inFile, outFile=None, normal=False, boxCollision=False, disableMeshOptimization=False):
+def convert2urdf(inFile, outFile=None, normal=False, boxCollision=False,
+                 disableMeshOptimization=False, enableMultiFile=False, staticBase=False, toolSlot=None, initRotation='0 1 0 0'):
     if not os.path.exists(inFile):
         sys.exit('Input file "%s" does not exists.' % inFile)
+    if not type(initRotation) == str or len(initRotation.split()) != 4:
+        sys.exit('--rotation argument is not valid. Has to be of Type = str and contain 4 values.')
 
     urdf2webots.parserURDF.disableMeshOptimization = disableMeshOptimization
+    urdf2webots.writeProto.enableMultiFile = enableMultiFile
+    urdf2webots.writeProto.staticBase = staticBase
+    urdf2webots.writeProto.toolSlot = toolSlot
 
     with open(inFile, 'r') as file:
         inPath = os.path.dirname(os.path.abspath(inFile))
@@ -81,10 +87,15 @@ def convert2urdf(inFile, outFile=None, normal=False, boxCollision=False, disable
         for child in domFile.childNodes:
             if child.localName == 'robot':
                 robotName = convertLUtoUN(urdf2webots.parserURDF.getRobotName(child))  # capitalize
+                urdf2webots.writeProto.robotNameMain = robotName
                 outputFile = outFile if outFile else robotName + '.proto'
 
                 urdf2webots.parserURDF.robotName = robotName  # pass robotName
                 mkdirSafe(outputFile.replace('.proto', '') + '_textures')  # make a dir called 'x_textures'
+
+                if enableMultiFile:
+                    mkdirSafe(outputFile.replace('.proto', '') + '_meshes')  # make a dir called 'x_meshes'
+                    urdf2webots.writeProto.meshFilesPath = outputFile.replace('.proto', '') + '_meshes'
 
                 robot = child
                 protoFile = open(outputFile, 'w')
@@ -149,7 +160,7 @@ def convert2urdf(inFile, outFile=None, normal=False, boxCollision=False, disable
                               urdf2webots.parserURDF.Lidar.list)
                 print('There are %d links, %d joints and %d sensors' % (len(linkList), len(jointList), len(sensorList)))
 
-                urdf2webots.writeProto.declaration(protoFile, robotName)
+                urdf2webots.writeProto.declaration(protoFile, robotName, initRotation)
                 urdf2webots.writeProto.URDFLink(protoFile, rootLink, 1, parentList, childList, linkList, jointList,
                                                 sensorList, boxCollision=boxCollision, normal=normal, robot=True)
                 protoFile.write('}\n')
@@ -169,6 +180,15 @@ if __name__ == '__main__':
     optParser.add_option('--disable-mesh-optimization', dest='disableMeshOptimization', action='store_true', default=False,
                          help='If set, the duplicated vertices are not removed from the meshes (this can speed up a lot the '
                          'conversion).')
+    optParser.add_option('--multi-file', dest='enableMultiFile', action='store_true', default=False,
+                         help='If set, the mesh files are exported as separated PROTO files')
+    optParser.add_option('--static-base', dest='staticBase', action='store_true', default=False,
+                         help='If set, the base link will have the option to be static (disable physics)')
+    optParser.add_option('--tool-slot', dest='toolSlot', default=None,
+                         help='Specify the link that you want to add a tool slot too (exact link name from urdf)')
+    optParser.add_option('--rotation', dest='initRotation', default='0 1 0 0',
+                         help='Set the rotation field of your PROTO file.')
     options, args = optParser.parse_args()
 
-    convert2urdf(options.inFile, options.outFile, options.normal, options.boxCollision, options.disableMeshOptimization)
+    convert2urdf(options.inFile, options.outFile, options.normal, options.boxCollision, options.disableMeshOptimization,
+                 options.enableMultiFile, options.staticBase, options.toolSlot, options.initRotation)
