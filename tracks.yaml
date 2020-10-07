@@ -68,7 +68,7 @@ tracks:
     last_version: 1.0.1
     name: webots_ros2
     patches: null
-    release_inc: '2'
+    release_inc: '3'
     release_repo_url: null
     release_tag: 1.0.1
     ros_distro: foxy
