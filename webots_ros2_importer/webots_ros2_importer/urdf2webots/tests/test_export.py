@@ -1,5 +1,6 @@
 """Test module of the urdf2webots script."""
 import os
+import sys
 import unittest
 import shutil
 
@@ -24,7 +25,7 @@ modelPaths = [
             os.path.join(expectedDirectory, 'MotomanSia20d_meshes', 'MotomanSia20d_MOTOMAN_AXIS_UMesh.proto'),
             os.path.join(expectedDirectory, 'MotomanSia20d_meshes', 'MotomanSia20d_MOTOMAN_BASEMesh.proto'),
         ],
-        'arguments': '--multi-file --static-base --tool-slot=tool0 --rotation="1 0 0 0"'
+        'arguments': '--multi-file --static-base --tool-slot=tool0 --rotation="1 0 0 0" --init-pos="[0.1, -0.1, 0.2]"'
     },
     {
         'input': os.path.join(sourceDirectory, 'gait2392_simbody/urdf/human.urdf'),
@@ -36,6 +37,7 @@ modelPaths = [
 
 
 def fileCompare(file1, file2):
+    """Compare content of two files."""
     with open(file1) as f1, open(file2) as f2:
         for line1, line2 in zip(f1, f2):
             if line1.startswith('# Extracted from:') and line2.startswith('# Extracted from:'):
@@ -56,10 +58,14 @@ class TestScript(unittest.TestCase):
     def test_script_produces_the_correct_result(self):
         """Test that urdf2webots produces an expected result."""
         for paths in modelPaths:
-            command = ('python %s --input=%s --output=%s %s' %
-                       (urdf2webotsPath, paths['input'], paths['output'], paths['arguments']))
+            command = ('%s %s --input=%s --output=%s %s' %
+                       (sys.executable, urdf2webotsPath, paths['input'], paths['output'], paths['arguments']))
             retcode = os.system(command)
             self.assertEqual(retcode, 0, msg='Error when exporting "%s"' % (paths['input']))
             for expected in paths['expected']:
                 self.assertTrue(fileCompare(expected.replace('expected', 'results'), expected),
                                 msg='Expected result mismatch when exporting "%s"' % paths['input'])
+
+
+if __name__ == '__main__':
+    unittest.main()
