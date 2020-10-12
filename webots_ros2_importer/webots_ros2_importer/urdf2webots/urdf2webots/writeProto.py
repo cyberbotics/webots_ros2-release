@@ -10,6 +10,8 @@ staticBase = False
 enableMultiFile = False
 meshFilesPath = None
 robotNameMain = ''
+initPos = None
+
 
 class RGB():
     """RGB color object."""
@@ -54,20 +56,23 @@ header.sourceFile = None
 
 def declaration(proto, robotName, initRotation):
     """Prototype declaration."""
+    spaces = ' ' * max(1, len(robotName) - 2)
     proto.write('PROTO ' + robotName + ' [\n')
     proto.write('  field  SFVec3f     translation     0 0 0\n')
     proto.write('  field  SFRotation  rotation        ' + initRotation + '\n')
-    proto.write('  field  SFString    controller      "void" # Is `Robot.controller`.\n')
-    proto.write('  field  MFString    controllerArgs  []     # Is `Robot.controllerArgs`.\n')
-    proto.write('  field  SFString    customData      ""     # Is `Robot.customData`.\n')
-    proto.write('  field  SFBool      supervisor      FALSE  # Is `Robot.supervisor`.\n')
-    proto.write('  field  SFBool      synchronization TRUE   # Is `Robot.synchronization`.\n')
-    proto.write('  field  SFBool      selfCollision   FALSE  # Is `Robot.selfCollision`.\n')
+    proto.write('  field  SFString    name            "' + robotName + '"  # Is `Robot.name`.\n')
+    proto.write('  field  SFString    controller      "void"' + spaces + '# Is `Robot.controller`.\n')
+    proto.write('  field  MFString    controllerArgs  []    ' + spaces + '# Is `Robot.controllerArgs`.\n')
+    proto.write('  field  SFString    customData      ""    ' + spaces + '# Is `Robot.customData`.\n')
+    proto.write('  field  SFBool      supervisor      FALSE ' + spaces + '# Is `Robot.supervisor`.\n')
+    proto.write('  field  SFBool      synchronization TRUE  ' + spaces + '# Is `Robot.synchronization`.\n')
+    proto.write('  field  SFBool      selfCollision   FALSE ' + spaces + '# Is `Robot.selfCollision`.\n')
     if staticBase:
-        proto.write('  field  SFBool      staticBase      TRUE   # Defines if the robot base should ' +
+        proto.write('  field  SFBool      staticBase      TRUE  ' + spaces + '# Defines if the robot base should ' +
                     'be pinned to the static environment.\n')
     if toolSlot:
-        proto.write('  field  MFNode      toolSlot        []     # Extend the robot with new nodes at the end of the arm.\n')
+        proto.write('  field  MFNode      toolSlot        []    ' + spaces +
+                    '# Extend the robot with new nodes at the end of the arm.\n')
     proto.write(']\n')
     proto.write('{\n')
 
@@ -122,16 +127,24 @@ def URDFLink(proto, link, level, parentList, childList, linkList, jointList, sen
         # 4: export ToolSlot if specified
         if link.name == toolSlot:
             if not haveChild:
-                haveChild = True
                 proto.write((level + 1) * indent + 'children [\n')
             proto.write((level + 2) * indent + 'Group {\n')
             proto.write((level + 3) * indent + 'children IS toolSlot\n')
             proto.write((level + 2) * indent + '}\n')
-
-        if haveChild:
             proto.write((level + 1) * indent + ']\n')
-
-        proto.write((level + 1) * indent + 'name "' + link.name + '"\n')
+            # add dummy physics and bounding object, so tools don't fall off
+            if link.inertia.mass is None:
+                proto.write((level + 1) * indent + 'physics Physics {\n')
+                proto.write((level + 1) * indent + '}\n')
+                proto.write((level + 1) * indent + 'boundingObject Box {\n')
+                proto.write((level + 2) * indent + 'size 0.01 0.01 0.01\n')
+                proto.write((level + 1) * indent + '}\n')
+        elif haveChild:
+            proto.write((level + 1) * indent + ']\n')
+        if level == 1:
+            proto.write((level + 1) * indent + 'name IS name \n')
+        else:
+            proto.write((level + 1) * indent + 'name "' + link.name + '"\n')
 
         if link.collision:
             URDFBoundingObject(proto, link, level + 1, boxCollision)
@@ -141,18 +154,39 @@ def URDFLink(proto, link, level, parentList, childList, linkList, jointList, sen
             proto.write((level + 1) * indent + 'physics Physics {\n')
             proto.write((level + 2) * indent + 'density -1\n')
             proto.write((level + 2) * indent + 'mass %lf\n' % link.inertia.mass)
-            if link.inertia.ixx > 0.0 and link.inertia.iyy > 0.0 and link.inertia.izz > 0.0:
+            if link.inertia.position != [0.0, 0.0, 0.0]:
                 proto.write((level + 2) * indent + 'centerOfMass [ %lf %lf %lf ]\n' % (link.inertia.position[0],
                                                                                        link.inertia.position[1],
                                                                                        link.inertia.position[2]))
+            if link.inertia.ixx > 0.0 and link.inertia.iyy > 0.0 and link.inertia.izz > 0.0:
+                i = link.inertia
+                inertiaMatrix = [i.ixx, i.ixy, i.ixz, i.ixy, i.iyy, i.iyz, i.ixz, i.iyz, i.izz]
+                if link.inertia.rotation[-1] != 0.0:
+                    rotationMatrix = matrixFromRotation(link.inertia.rotation)
+                    I_mat = np.array(inertiaMatrix).reshape(3, 3)
+                    R = np.array(rotationMatrix).reshape(3, 3)
+                    R_t = np.transpose(R)
+                    # calculate the rotated inertiaMatrix with R_t * I * R. For reference, check the link below
+                    # https://www.euclideanspace.com/physics/dynamics/inertia/rotation/index.htm
+                    inertiaMatrix = np.dot(np.dot(R_t, I_mat), R).reshape(9)
+                if (inertiaMatrix[0] != 1.0 or inertiaMatrix[4] != 1.0 or inertiaMatrix[8] != 1.0 or
+                        inertiaMatrix[1] != 0.0 or inertiaMatrix[2] != 0.0 or inertiaMatrix[5] != 0.0):
+                    proto.write((level + 2) * indent + 'inertiaMatrix [\n')
+                    # principals moments of inertia (diagonal)
+                    proto.write((level + 3) * indent + '%e %e %e\n' % (inertiaMatrix[0], inertiaMatrix[4], inertiaMatrix[8]))
+                    # products of inertia
+                    proto.write((level + 3) * indent + '%e %e %e\n' % (inertiaMatrix[1], inertiaMatrix[2], inertiaMatrix[5]))
+                    proto.write((level + 2) * indent + ']\n')
             proto.write((level + 1) * indent + '}\n')
             if level == 1 and staticBase:
                 proto.write((level + 1) * indent + '%{ end }%\n')
-        if link.inertia.rotation[-1] != 0.0:  # this should not happend
-            print('Warning: inertia of %s has a non-zero rotation [axis-angle] = "%lf %lf %lf %lf" '
-                  'but it will not be imported in proto!' % (link.name, link.inertia.rotation[0], link.inertia.rotation[1],
-                                                             link.inertia.rotation[2], link.inertia.rotation[3]))
-
+        elif link.collision:
+            if level == 1 and staticBase:
+                proto.write((level + 1) * indent + '%{ if fields.staticBase.value == false then }%\n')
+            proto.write((level + 1) * indent + 'physics Physics {\n')
+            proto.write((level + 1) * indent + '}\n')
+            if level == 1 and staticBase:
+                proto.write((level + 1) * indent + '%{ end }%\n')
     proto.write(level * indent + '}\n')
 
 
@@ -169,7 +203,7 @@ def URDFBoundingObject(proto, link, level, boxCollision):
 
     for boundingObject in link.collision:
         initialIndent = boundingLevel * indent if hasGroup else ''
-        if boundingObject.position != [0.0, 0.0, 0.0] or boundingObject.rotation[3] != 0.0:
+        if not boxCollision and boundingObject.position != [0.0, 0.0, 0.0] or boundingObject.rotation[3] != 0.0:
             proto.write(initialIndent + 'Transform {\n')
             proto.write((boundingLevel + 1) * indent + 'translation %lf %lf %lf\n' % (boundingObject.position[0],
                                                                                       boundingObject.position[1],
@@ -223,9 +257,13 @@ def URDFBoundingObject(proto, link, level, boxCollision):
 
             proto.write(initialIndent + 'Transform {\n')
             proto.write((boundingLevel + 1) * indent + 'translation %f %f %f\n' % (
-                        0.5 * (aabb['maximum']['x'] + aabb['minimum']['x']),
-                        0.5 * (aabb['maximum']['y'] + aabb['minimum']['y']),
-                        0.5 * (aabb['maximum']['z'] + aabb['minimum']['z']),))
+                        0.5 * (aabb['maximum']['x'] + aabb['minimum']['x']) + boundingObject.position[0],
+                        0.5 * (aabb['maximum']['y'] + aabb['minimum']['y']) + boundingObject.position[1],
+                        0.5 * (aabb['maximum']['z'] + aabb['minimum']['z']) + boundingObject.position[2],))
+            proto.write((boundingLevel + 1) * indent + 'rotation %lf %lf %lf %lf\n' % (boundingObject.rotation[0],
+                                                                                       boundingObject.rotation[1],
+                                                                                       boundingObject.rotation[2],
+                                                                                       boundingObject.rotation[3]))
             proto.write((boundingLevel + 1) * indent + 'children [\n')
             proto.write((boundingLevel + 2) * indent + 'Box {\n')
             proto.write((boundingLevel + 3) * indent + 'size %f %f %f\n' % (
@@ -351,15 +389,16 @@ def URDFVisual(proto, visualNode, level, normal=False):
         proto.write((shapeLevel + 1) * indent + '}\n')
 
     elif visualNode.geometry.trimesh.coord:
+        meshType = 'IndexedLineSet' if visualNode.geometry.lineset else 'IndexedFaceSet'
         if visualNode.geometry.defName is not None:
             proto.write((shapeLevel + 1) * indent + 'geometry USE %s\n' % visualNode.geometry.defName)
         else:
             if visualNode.geometry.name is not None:
                 visualNode.geometry.defName = computeDefName(visualNode.geometry.name)
             if visualNode.geometry.defName is not None:
-                proto.write((shapeLevel + 1) * indent + 'geometry DEF %s IndexedFaceSet {\n' % visualNode.geometry.defName)
+                proto.write((shapeLevel + 1) * indent + 'geometry DEF %s %s {\n' % (visualNode.geometry.defName, meshType))
             else:
-                proto.write((shapeLevel + 1) * indent + 'geometry IndexedFaceSet {\n')
+                proto.write((shapeLevel + 1) * indent + 'geometry %s {\n' % meshType)
             proto.write((shapeLevel + 2) * indent + 'coord Coordinate {\n')
             proto.write((shapeLevel + 3) * indent + 'point [\n' + (shapeLevel + 4) * indent)
             for value in visualNode.geometry.trimesh.coord:
@@ -375,6 +414,9 @@ def URDFVisual(proto, visualNode, level, normal=False):
                 for value in visualNode.geometry.trimesh.coordIndex:
                     if len(value) == 3:
                         proto.write('%d %d %d -1 ' % (value[0], value[1], value[2]))
+                    elif len(value) == 2:
+                        assert visualNode.geometry.lineset
+                        proto.write('%d %d -1 ' % (value[0], value[1]))
             elif isinstance(visualNode.geometry.trimesh.coordIndex[0], np.int32):
                 for i in range(int(len(visualNode.geometry.trimesh.coordIndex) / 3)):
                     proto.write('%d %d %d -1 ' % (visualNode.geometry.trimesh.coordIndex[3 * i + 0],
@@ -430,7 +472,8 @@ def URDFVisual(proto, visualNode, level, normal=False):
                     print('Unsupported "%s" coordinate type' % type(visualNode.geometry.trimesh.texCoordIndex[0]))
                 proto.write('\n' + (shapeLevel + 2) * indent + ']\n')
 
-            proto.write((shapeLevel + 2) * indent + 'creaseAngle 1\n')
+            if not visualNode.geometry.lineset:
+                proto.write((shapeLevel + 2) * indent + 'creaseAngle 1\n')
             proto.write((shapeLevel + 1) * indent + '}\n')
     proto.write(shapeLevel * indent + '}\n')
 
@@ -459,8 +502,8 @@ def URDFShape(proto, link, level, normal=False):
             if name is None:
                 if visualNode.geometry.name is not None:
                     name = computeDefName(visualNode.geometry.name)
+            name = robotNameMain + '_' + name if robotNameMain else name
             if visualNode.geometry.defName is None:
-                name = robotNameMain + '_' + name if robotNameMain else name
                 print('Create meshFile: %sMesh.proto' % name)
                 filepath = '%s/%sMesh.proto' % (meshFilesPath, name)
                 meshProtoFile = open(filepath, 'w')
@@ -493,11 +536,17 @@ def URDFJoint(proto, joint, level, parentList, childList, linkList, jointList,
     if joint.type == 'revolute' or joint.type == 'continuous':
         proto.write(level * indent + 'HingeJoint {\n')
         proto.write((level + 1) * indent + 'jointParameters HingeJointParameters {\n')
+        position = None
         if joint.limit.lower > 0.0:
             # if 0 is not in the range, set the position to be the middle of the range
             position = joint.limit.lower
             if joint.limit.upper >= joint.limit.lower:
                 position = (joint.limit.upper - joint.limit.lower) / 2.0 + joint.limit.lower
+        if initPos is not None:
+            if len(initPos) > 0:
+                position = initPos[0]
+                del initPos[0]
+        if position is not None:
             proto.write((level + 2) * indent + 'position %lf \n' % position)
             mat1 = matrixFromRotation(endpointRotation)
             mat2 = matrixFromRotation([axis[0], axis[1], axis[2], position])
