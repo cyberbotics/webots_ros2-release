@@ -18,7 +18,7 @@ from urdf2webots.gazebo_materials import materials
 from urdf2webots.math_utils import convertRPYtoEulerAxis
 
 try:
-    from collada import Collada
+    from collada import Collada, lineset
     colladaIsAvailable = True
 except ImportError:
     colladaIsAvailable = False
@@ -50,7 +50,7 @@ class Inertia():
         """Initializatization."""
         self.position = [0.0, 0.0, 0.0]
         self.rotation = [1.0, 0.0, 0.0, 0.0]
-        self.mass = 1.0
+        self.mass = None
         self.ixx = 1.0
         self.ixy = 0.0
         self.ixz = 0.0
@@ -100,6 +100,7 @@ class Geometry():
         self.scale = [1.0, 1.0, 1.0]
         self.name = None
         self.defName = None
+        self.lineset = False
 
 
 class Color():
@@ -420,15 +421,40 @@ def getSTLMesh(filename, node):
     return node
 
 
-def getOBJMesh(filename, node):
+def getOBJMesh(filename, node, link):
     """read obj file."""
     print('Parsing Mesh: ' + filename)
+    if hasattr(node, 'material') and node.material:
+        isVisual = True
+    else:
+        isVisual = False
+
     with open(filename, 'r') as file:
-        trimesh = node.geometry.trimesh
+        counter = 0
+        indexOffset = 0
+        collision = None
         for line in file:
             header, body = line.split(' ', 1)
             if header == '#':
                 continue
+            elif header == 'o':
+                if counter != 0:
+                    if isVisual:
+                        link.visual.append(collision)
+                    else:
+                        link.collision.append(collision)
+                    indexOffset += len(collision.geometry.trimesh.coord)
+                if isVisual:
+                    collision = Visual()
+                    collision.material = node.material
+                else:
+                    collision = Collision()
+                collision.position = node.position
+                collision.rotation = node.rotation
+                collision.geometry.scale = node.geometry.scale
+                extSring = '_%d' % (counter) if counter != 0 else ''
+                collision.geometry.name = '%s%s' % (os.path.splitext(os.path.basename(filename))[0], extSring)
+                counter += 1
             elif header == 'f':  # face
                 vertices = body.split()
                 coordIndex = []
@@ -436,36 +462,37 @@ def getOBJMesh(filename, node):
                 normalIndex = []
                 for vertex in vertices:
                     indices = vertex.split('/')
-                    coordIndex.append(int(indices[0]) - 1)  # vertex coordinates
+                    coordIndex.append(int(indices[0]) - indexOffset - 1)  # vertex coordinates
                     length = len(indices)
                     if length > 1 and indices[1]:  # texture coordinates
-                        texCoordIndex.append(int(indices[1]) - 1)
+                        texCoordIndex.append(int(indices[1]) - indexOffset - 1)
                     if length > 2 and indices[2]:  # normal coordinates
-                        normalIndex.append(int(indices[2]) - 1)
-                trimesh.coordIndex.append(coordIndex)
+                        normalIndex.append(int(indices[2]) - indexOffset - 1)
+                collision.geometry.trimesh.coordIndex.append(coordIndex)
                 if texCoordIndex:
-                    trimesh.texCoordIndex.append(texCoordIndex)
+                    collision.geometry.trimesh.texCoordIndex.append(texCoordIndex)
                 if normalIndex:
-                    trimesh.normalIndex.append(normalIndex)
+                    collision.geometry.trimesh.normalIndex.append(normalIndex)
             elif header == 'l':  # line, ignored
-                continue
-            elif header == 'o':  # object name, ignored
                 continue
             elif header == 'v':  # vertex
                 x, y, z = body.split()
-                trimesh.coord.append([float(x), float(y), float(z)])
+                collision.geometry.trimesh.coord.append([float(x), float(y), float(z)])
             elif header == 'vn':  # normals
                 x, y, z = body.split()
-                trimesh.normal.append([float(x), float(y), float(z)])
+                collision.geometry.trimesh.normal.append([float(x), float(y), float(z)])
             elif header == 'vp':  # parameters, ignored
                 continue
             elif header == 'vt':  # texture coordinate
                 texCoord = body.split()
                 if len(texCoord) < 1:  # v argument is optional and defaults to 0
                     texCoord.append('0')
-                trimesh.texCoord.append([float(texCoord[0]), float(texCoord[1])])
+                collision.geometry.trimesh.texCoord.append([float(texCoord[0]), float(texCoord[1])])
                 continue
-    return node
+        if isVisual:
+            link.visual.append(collision)
+        else:
+            link.collision.append(collision)
 
 
 def getColladaMesh(filename, node, link):
@@ -491,6 +518,8 @@ def getColladaMesh(filename, node, link):
                 visual.material.diffuse.alpha = node.material.diffuse.alpha
                 visual.material.texture = node.material.texture
                 name = '%s_%d' % (os.path.splitext(os.path.basename(filename))[0], index)
+                if type(data.original) is lineset.LineSet:
+                    visual.geometry.lineset = True
                 if name in Geometry.reference:
                     visual.geometry = Geometry.reference[name]
                 else:
@@ -638,7 +667,10 @@ def getVisual(link, node, path):
                 visual.material.diffuse.blue = float(colorElement[2])
                 visual.material.diffuse.alpha = float(colorElement[3])
                 if material.hasAttribute('name'):
-                    visual.material.name = material.getAttribute('name')
+                    if material.getAttribute('name'):
+                        visual.material.name = material.getAttribute('name')
+                    else:
+                        visual.material.name = node.getAttribute('name') + '_material'
                     Material.namedMaterial[visual.material.name] = visual.material
             elif material.firstChild and material.firstChild.nodeValue in materials:
                 materialName = material.firstChild.nodeValue
@@ -702,15 +734,15 @@ def getVisual(link, node, path):
             extension = os.path.splitext(meshfile)[1].lower()
             if extension == '.dae':
                 getColladaMesh(meshfile, visual, link)
-            elif extension in ['.stl', '.obj']:
+            elif extension == '.obj':
+                getOBJMesh(meshfile, visual, link)
+            elif extension == '.stl':
                 name = os.path.splitext(os.path.basename(meshfile))[0]
                 if name in Geometry.reference:
                     visual.geometry = Geometry.reference[name]
                 else:
                     if extension == '.stl':
                         visual = getSTLMesh(meshfile, visual)
-                    else:  # '.obj'
-                        visual = getOBJMesh(meshfile, visual)
                     visual.geometry.name = name
                     Geometry.reference[name] = visual.geometry
                 link.visual.append(visual)
@@ -763,16 +795,16 @@ def getCollision(link, node, path):
                 meshfile = meshfile[idx0 + len('package://'):]
             extension = os.path.splitext(meshfile)[1].lower()
             if extension == '.dae':
-                collision.geometry.collada = getColladaMesh(meshfile, collision, link)
-            elif extension in ['.stl', '.obj']:
+                getColladaMesh(meshfile, collision, link)
+            elif extension == '.obj':
+                getOBJMesh(meshfile, collision, link)
+            elif extension == '.stl':
                 name = os.path.splitext(os.path.basename(meshfile))[0]
                 if name in Geometry.reference:
                     collision.geometry = Geometry.reference[name]
                 else:
                     if extension == '.stl':
                         collision.geometry.stl = getSTLMesh(meshfile, collision)
-                    else:  # '.obj'
-                        collision.geometry.stl = getOBJMesh(meshfile, collision)
                     collision.geometry.name = name
                     Geometry.reference[name] = collision.geometry
                 link.collision.append(collision)
