@@ -41,7 +41,7 @@ python demo.py --input=someRobot.urdf [--output=outputFile] [--box-collision] [-
 The script accepts the following arguments:
   - **-h, --help**: Show the help message and exit.
   - **--input=INFILE**: Specifies the urdf file to convert.
-  - **--output=OUTFILE**: Specifies the name of the resulting PROTO file.
+  - **--output=OUTFILE**: If set, specifies the path and, if ending in ".proto", name of the resulting PROTO file. The filename minus the .proto extension will be the robot name.
   - **--normal**: If set, the normals are exported if present in the URDF definition.
   - **--box-collision**: If set, the bounding objects are approximated using boxes.
   - **--disable-mesh-optimization**: If set, the duplicated vertices are not removed from the meshes (this can speed up a lot the conversion).
@@ -49,6 +49,7 @@ The script accepts the following arguments:
   - **--static-base**: If set, the base link will have the option to be static (disable physics)
   - **--tool-slot=LinkName**: Specify the link that you want to add a tool slot to (exact link name from urdf).
   - **--rotation="0 1 0 0"**: Set the rotation field of your PROTO file. If your URDF file uses the z-axis as 'up', use `--rotation="1 0 0 -1.5708"`.
+  - **--init-pos=JointPositions**: Set the initial positions of your robot joints. Example: `--init-pos="[1.2, 0.5, -1.5]"` would set the first 3 joints of your robot to the specified values, and leave the rest with their default value.
 
 ### In your Python Code
 
