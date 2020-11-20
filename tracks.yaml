@@ -97,7 +97,7 @@ tracks:
     patches: null
     release_inc: '1'
     release_repo_url: null
-    release_tag: master
+    release_tag: affcdbc0f0cfdd473437d0985d3484285ed3c84f
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
