@@ -1,3 +1,39 @@
+## webots_ros2 (foxy) - 1.0.3-1
+
+The packages in the `webots_ros2` repository were released into the `foxy` distro by running `/home/lukic/.local/bin/bloom-release --rosdistro foxy webots_ros2 --edit` on `Tue, 01 Dec 2020 13:25:44 -0000`
+
+These packages were released:
+- `webots_ros2`
+- `webots_ros2_abb`
+- `webots_ros2_core`
+- `webots_ros2_demos`
+- `webots_ros2_epuck`
+- `webots_ros2_examples`
+- `webots_ros2_importer`
+- `webots_ros2_msgs`
+- `webots_ros2_tiago`
+- `webots_ros2_turtlebot`
+- `webots_ros2_tutorials`
+- `webots_ros2_universal_robot`
+- `webots_ros2_ur_e_description`
+
+Version of package(s) in repository `webots_ros2`:
+
+- upstream repository: https://github.com/cyberbotics/webots_ros2.git
+- release repository: https://github.com/cyberbotics/webots_ros2-release.git
+- rosdistro version: `1.0.2-1`
+- old version: `1.0.2-1`
+- new version: `1.0.3-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.0`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.20.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## webots_ros2 (rolling) - 1.0.2-2
 
 The packages in the `webots_ros2` repository were released into the `rolling` distro by running `/home/lukic/.local/bin/bloom-release --rosdistro rolling webots_ros2 --edit` on `Fri, 20 Nov 2020 13:23:00 -0000`
