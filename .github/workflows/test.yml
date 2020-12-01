@@ -6,12 +6,9 @@ on:
 
 jobs:
   industrial_ci:
-    if: github.event.pull_request.draft == false
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: eloquent, ROS_REPO: testing}
-          - {ROS_DISTRO: eloquent, ROS_REPO: main}
           - {ROS_DISTRO: foxy, ROS_REPO: testing}
           - {ROS_DISTRO: foxy, ROS_REPO: main}
     runs-on: ubuntu-latest
