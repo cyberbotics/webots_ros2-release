@@ -71,11 +71,11 @@ tracks:
     patches: null
     release_inc: '1'
     release_repo_url: null
-    release_tag: e73dff0
+    release_tag: foxy
     ros_distro: foxy
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.0.4
+    version: 1.0.5
   rolling:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
