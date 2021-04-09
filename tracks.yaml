@@ -96,7 +96,7 @@ tracks:
     last_version: 1.0.2
     name: webots_ros2
     patches: null
-    release_inc: '2'
+    release_inc: '3'
     release_repo_url: null
     release_tag: affcdbc0f0cfdd473437d0985d3484285ed3c84f
     ros_distro: rolling
