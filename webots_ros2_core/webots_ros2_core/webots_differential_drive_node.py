@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2020 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist, TransformStamped
 from tf2_ros import TransformBroadcaster
 from webots_ros2_core.webots_node import WebotsNode
+from webots_ros2_core.math_utils import euler_to_quaternion
 from webots_ros2_core.utils import get_node_name_from_args
 
 
@@ -181,8 +182,7 @@ class WebotsDifferentialDriveNode(WebotsNode):
         msg.twist.twist.angular.z = omega
         msg.pose.pose.position.x = position[0]
         msg.pose.pose.position.y = position[1]
-        msg.pose.pose.orientation.z = sin(angle / 2)
-        msg.pose.pose.orientation.w = cos(angle / 2)
+        msg.pose.pose.orientation = euler_to_quaternion(0, 0, angle)
         self._odometry_publisher.publish(msg)
 
         # Pack & publish transforms
@@ -193,8 +193,7 @@ class WebotsDifferentialDriveNode(WebotsNode):
         tf.transform.translation.x = position[0]
         tf.transform.translation.y = position[1]
         tf.transform.translation.z = 0.0
-        tf.transform.rotation.z = sin(angle / 2)
-        tf.transform.rotation.w = cos(angle / 2)
+        tf.transform.rotation = euler_to_quaternion(0, 0, angle)
         self._tf_broadcaster.sendTransform(tf)
 
     def _on_param_changed(self, params):

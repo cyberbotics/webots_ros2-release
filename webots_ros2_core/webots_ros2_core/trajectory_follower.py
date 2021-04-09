@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2019 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,23 @@
 
 import copy
 import math
+import sys
+
+from webots_ros2_core.utils import append_webots_python_lib_to_path
+
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 from rclpy.duration import Duration
 from rclpy.time import Time
+
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
-from webots_ros2_core.webots_controller import Node
+
+try:
+    append_webots_python_lib_to_path()
+    from controller import Node
+except Exception as e:
+    sys.stderr.write('"WEBOTS_HOME" is not correctly set.')
+    raise e
 
 
 def trajectory_is_finite(trajectory):
@@ -98,86 +109,84 @@ def set_position_in_limit(motor, position):
 class Trajectory():
     """Trajectory representation."""
 
-    def __init__(self, goal_handle, start_time):
-        self.joint_trajectory = goal_handle.trajectory
-        self.goal_tolerance = goal_handle.goal_tolerance
-        self.goal_handle = goal_handle
-        self.start_time = start_time
-        self.last_point_sent = False
+    def __init__(self, goalHandle, startTime):
+        self.jointTrajectory = goalHandle.trajectory
+        self.goalTolerance = goalHandle.goal_tolerance
+        self.goalHandle = goalHandle
+        self.startTime = startTime
+        self.lastPointSent = False
         self.id = None
 
 
 class TrajectoryFollower():
     """Create and handle the action 'follow_joint_trajectory' server."""
 
-    def __init__(self, robot, node, joint_prefix):
-        self.__robot = robot
-        self.__node = node
-        self.__previous_time = Time(seconds=robot.getTime())
-        self.__timestep = int(robot.getBasicTimeStep())
-
+    def __init__(self, robot, node, jointPrefix, goal_time_tolerance=None):
+        self.robot = robot
+        self.node = node
+        self.previousTime = Time(seconds=robot.getTime())
+        self.timestep = int(robot.getBasicTimeStep())
         # Parse motor and position sensors
-        self.__motors = {}
-        self.__sensors = {}
-        self.__position = {}
-        self.__velocity = {}
+        self.motors = {}
+        self.sensors = {}
+        self.position = {}
+        self.velocity = {}
         for i in list(range(robot.getNumberOfDevices())):
             device = robot.getDeviceByIndex(i)
             if device.getNodeType() in [Node.LINEAR_MOTOR, Node.ROTATIONAL_MOTOR]:
                 name = device.getName()
-                position_sensor = device.getPositionSensor()
-                if position_sensor is None:
-                    self.__node.get_logger().info('Motor "%s" doesn\'t have any position \
+                positionSensor = device.getPositionSensor()
+                if positionSensor is None:
+                    self.node.get_logger().info('Motor "%s" doesn\'t have any position \
                         sensor, impossible to include it in the action server.')
                 else:
-                    self.__motors[joint_prefix + name] = device
-                    self.__sensors[joint_prefix + name] = position_sensor
-                    self.__position[joint_prefix + name] = 0.0
-                    self.__velocity[joint_prefix + name] = 0.0
-                    position_sensor.enable(self.__timestep)
-        self.__number_of_motors = len(self.__motors)
-
+                    self.motors[jointPrefix + name] = device
+                    self.sensors[jointPrefix + name] = positionSensor
+                    self.position[jointPrefix + name] = 0.0
+                    self.velocity[jointPrefix + name] = 0.0
+                    positionSensor.enable(self.timestep)
+        self.numberOfMotors = len(self.motors)
         # Initialize trajectory list and action server
-        self.__joint_path_tolerances = [0.05] * self.__number_of_motors
-        self.__trajectories = []
-        self.__server = ActionServer(self.__node, FollowJointTrajectory,
-                                     'follow_joint_trajectory',
-                                     execute_callback=self.update,
-                                     goal_callback=self.on_goal,
-                                     cancel_callback=self.on_cancel,
-                                     handle_accepted_callback=self.on_goal_accepted)
+        self.joint_path_tolerances = [0.05] * self.numberOfMotors
+        self.trajectories = []
+        self.server = ActionServer(self.node, FollowJointTrajectory,
+                                   'follow_joint_trajectory',
+                                   execute_callback=self.update,
+                                   goal_callback=self.on_goal,
+                                   cancel_callback=self.on_cancel,
+                                   handle_accepted_callback=self.on_goal_accepted)
 
     def on_goal_accepted(self, goal_handle):
         """Assign ID and execute the goal."""
-        assert self.__trajectories[-1].id is None
-        self.__trajectories[-1].id = goal_handle.goal_id
+        assert self.trajectories[-1].id is None
+        self.trajectories[-1].id = goal_handle.goal_id
         goal_handle.execute()
 
     def on_goal(self, goal_handle):
         """Handle a new goal trajectory command."""
         # Checks if the joints are just incorrect
         for name in goal_handle.trajectory.joint_names:
-            if name not in self.__motors.keys():
-                self.__node.get_logger().warn('Received a goal with incorrect joint names: (%s)' %
-                                              ', '.join(goal_handle.trajectory.joint_names))
+            if name not in self.motors.keys():
+                self.node.get_logger().warn('Received a goal with incorrect joint names: (%s)' %
+                                            ', '.join(goal_handle.trajectory.joint_names))
                 return GoalResponse.REJECT
         if not trajectory_is_finite(goal_handle.trajectory):
-            self.__node.get_logger().warn('Received a goal with infinites or NaNs')
+            self.node.get_logger().warn('Received a goal with infinites or NaNs')
             return GoalResponse.REJECT
 
         # Checks that the trajectory has velocities
         if not has_velocities(goal_handle.trajectory):
-            self.__node.get_logger().warn('Received a goal without velocities')
+            self.node.get_logger().warn('Received a goal without velocities')
             return GoalResponse.REJECT
 
         # Inserts the current setpoint at the head of the trajectory
-        now = Time(seconds=self.__robot.getTime())
+        now = Time(seconds=self.robot.getTime())
         positions = []
         velocities = []
         accelerations = []
         for name in goal_handle.trajectory.joint_names:
-            positions.append(self.__position[name])
-            velocities.append(self.__velocity[name])
+            positions.append(self.position[name])
+            velocities.append(self.velocity[name])
             accelerations.append(0.0)
         point0 = JointTrajectoryPoint(
             positions=positions,
@@ -187,14 +196,14 @@ class TrajectoryFollower():
         goal_handle.trajectory.points.insert(0, point0)
 
         # Add this trajectory to the list if not conflicting with a current trajectory
-        logger = self.__node.get_logger()
-        for trajectory in self.__trajectories:
-            if bool(set(trajectory.joint_trajectory.joint_names) &
+        logger = self.node.get_logger()
+        for trajectory in self.trajectories:
+            if bool(set(trajectory.jointTrajectory.joint_names) &
                     set(goal_handle.trajectory.joint_names)):
                 logger.info('Goal Refused: a goal sharing some joint is already running')
                 return GoalResponse.REJECT
         trajectory = Trajectory(goal_handle, now)
-        self.__trajectories.append(trajectory)
+        self.trajectories.append(trajectory)
         logger.info('Goal Accepted')
         return GoalResponse.ACCEPT
 
@@ -202,89 +211,91 @@ class TrajectoryFollower():
         """Handle a trajectory cancel command."""
         # stop the motors
         trajectory = None
-        for trajectory in self.__trajectories:
+        for trajectory in self.trajectories:
             if trajectory.id == goal_handle.goal_id:
-                for name in trajectory.joint_trajectory.joint_names:
-                    set_position_in_limit(self.__motors[name], self.__sensors[name].getValue())
-                self.__trajectories.remove(trajectory)
-                self.__node.get_logger().info('Goal Canceled')
+                for name in trajectory.jointTrajectory.joint_names:
+                    set_position_in_limit(self.motors[name], self.sensors[name].getValue())
+                self.trajectories.remove(trajectory)
+                self.node.get_logger().info('Goal Canceled')
                 goal_handle.destroy()
                 return CancelResponse.ACCEPT
         return CancelResponse.REJECT
 
     def update(self, goal_handle):
         result = FollowJointTrajectory.Result()
-        while self.__robot:
+        while self.robot:
             # Update position and velocites
-            now = Time(seconds=self.__robot.getTime())
+            now = Time(seconds=self.robot.getTime())
             position = {}
             velocity = {}
-            time_difference = now - self.__previous_time
-            for name in self.__sensors.keys():
-                position[name] = self.__sensors[name].getValue()
-                if time_difference > Duration(seconds=0):
-                    velocity[name] = (position[name] - self.__position[name]) / (time_difference.nanoseconds * 1e9)
+            timeDifference = now - self.previousTime
+            for name in self.sensors.keys():
+                position[name] = self.sensors[name].getValue()
+                if timeDifference > Duration(seconds=0):
+                    velocity[name] = (position[name] - self.position[name]) / (timeDifference.nanoseconds * 1e9)
                 else:
-                    velocity[name] = self.__velocity[name]
+                    velocity[name] = self.velocity[name]
 
-            if not self.__trajectories:
-                self.__position = position
-                self.__velocity = velocity
-                self.__previous_time = now
+            if not self.trajectories:
+                self.position = position
+                self.velocity = velocity
+                self.previousTime = now
                 break
 
             # Look for the trajectory associated to this goal
             trajectory = None
-            for traj in self.__trajectories:
+            for traj in self.trajectories:
                 if traj.id == goal_handle.goal_id:
                     trajectory = traj
                     break
             if not trajectory:
                 break
             # Apply trajectory
-            last_point_start = Duration.from_msg(trajectory.joint_trajectory.points[-1].time_from_start)
-            if (now - trajectory.start_time) <= last_point_start:
+            lastPointStart = Duration.from_msg(trajectory.jointTrajectory.points[-1].time_from_start)
+            if (now - trajectory.startTime) <= lastPointStart:
                 # Sending intermediate points
-                trajectory.last_point_sent = False
-                setpoint = sample_trajectory(trajectory.joint_trajectory,
-                                             now - trajectory.start_time)
-                for name in trajectory.joint_trajectory.joint_names:
-                    index = trajectory.joint_trajectory.joint_names.index(name)
-                    set_position_in_limit(self.__motors[name], setpoint.positions[index])
+                trajectory.lastPointSent = False
+                setpoint = sample_trajectory(trajectory.jointTrajectory,
+                                             now - trajectory.startTime)
+                for name in trajectory.jointTrajectory.joint_names:
+                    index = trajectory.jointTrajectory.joint_names.index(name)
+                    set_position_in_limit(self.motors[name], setpoint.positions[index])
                     # Velocity control is not used on the real robot and gives
                     # bad results in the simulation
-            elif not trajectory.last_point_sent:
+                    # self.motors[name].setVelocity(math.fabs(setpoint.velocities[index]))
+            elif not trajectory.lastPointSent:
                 # All intermediate points sent, sending last point to make sure we reach the goal
-                trajectory.last_point_sent = True
-                setpoint = sample_trajectory(trajectory.joint_trajectory, last_point_start)
-                for name in trajectory.joint_trajectory.joint_names:
-                    index = trajectory.joint_trajectory.joint_names.index(name)
-                    set_position_in_limit(self.__motors[name], setpoint.positions[index])
+                trajectory.lastPointSent = True
+                setpoint = sample_trajectory(trajectory.jointTrajectory, lastPointStart)
+                for name in trajectory.jointTrajectory.joint_names:
+                    index = trajectory.jointTrajectory.joint_names.index(name)
+                    set_position_in_limit(self.motors[name], setpoint.positions[index])
                     # Velocity control is not used on the real robot and gives
                     # bad results in the simulations
+                    # self.motors[name].setVelocity(math.fabs(setpoint.velocities[index]))
             else:  # Off the end
-                last_point = trajectory.joint_trajectory.points[-1]
-                reference_positions = []
+                last_point = trajectory.jointTrajectory.points[-1]
+                referencePositions = []
                 tolerances = [0.1] * len(last_point.positions)
-                for name in trajectory.joint_trajectory.joint_names:
-                    reference_positions.append(position[name])
-                    for tolerance in trajectory.goal_tolerance:
+                for name in trajectory.jointTrajectory.joint_names:
+                    referencePositions.append(position[name])
+                    for tolerance in trajectory.goalTolerance:
                         if tolerance.name == name:
-                            tolerances[len(reference_positions) - 1] = tolerance.position
+                            tolerances[len(referencePositions) - 1] = tolerance.position
                             break
-                position_in_tol = within_tolerance(reference_positions,
+                position_in_tol = within_tolerance(referencePositions,
                                                    last_point.positions,
                                                    tolerances)
                 if position_in_tol:
                     # The arm reached the goal => Succeeded
                     result.error_code = result.SUCCESSFUL
                     goal_handle.succeed()
-                    self.__trajectories.remove(trajectory)
-                    self.__node.get_logger().info('Goal Succeeded')
+                    self.trajectories.remove(trajectory)
+                    self.node.get_logger().info('Goal Succeeded')
                     return result
-            self.__position = position
-            self.__velocity = velocity
-            self.__previous_time = now
+            self.position = position
+            self.velocity = velocity
+            self.previousTime = now
         goal_handle.abort()
         result.error_code = result.PATH_TOLERANCE_VIOLATED
         return result

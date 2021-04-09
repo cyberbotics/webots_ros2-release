@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2019 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@
 import copy
 import os
 import sys
-from tempfile import mkstemp
 import xacro
+
+from tempfile import mkstemp
 from webots_ros2_importer import urdf2proto
 
 
 def main(args=None):
     # remvove arguments specific to the urdf2proto converter
-    saved_argv = copy.copy(sys.argv)
-    args_to_remove = [
+    savedArgv = copy.copy(sys.argv)
+    argsToRemove = [
         '--normal',
         '--box-collision',
         '--disable-mesh-optimization',
@@ -35,17 +36,17 @@ def main(args=None):
         '--tool-slot',
         '--rotation'
     ]
-    for arg in saved_argv:
-        for arg_to_remove in args_to_remove:
-            if arg.startswith(arg_to_remove):
+    for arg in savedArgv:
+        for argToRemove in argsToRemove:
+            if arg.startswith(argToRemove):
                 sys.argv.remove(arg)
                 break
-    for arg in args_to_remove:
+    for arg in argsToRemove:
         if arg in sys.argv:
             sys.argv.remove(arg)
     # redirect stdout to temporary urdf file
     orig_stdout = sys.stdout
-    _, path = mkstemp(suffix='.urdf')
+    file, path = mkstemp(suffix='.urdf')
     with open(path, 'w') as f:
         sys.stdout = f
         # run xacro to urdf conversio
@@ -53,7 +54,7 @@ def main(args=None):
         xacro.main()
     # restore stdout and arguments and then run urdf to proto conversion
     sys.stdout = orig_stdout
-    sys.argv = saved_argv
+    sys.argv = savedArgv
     urdf2proto.main(input=path)
     os.remove(path)
 

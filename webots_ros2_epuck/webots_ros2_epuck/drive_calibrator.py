@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2020 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@
 
 import sys
 import time
-from math import pi, atan2
+from math import pi
 import rclpy
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
+from webots_ros2_core.math_utils import quaternion_to_euler
 
 
 DEFAULT_DISTANCE = 0.1335
@@ -68,8 +69,7 @@ class EPuckDriveCalibrator(Node):
         self.pub.publish(msg)
 
     def odometry_callback(self, msg: Odometry):
-        q = msg.pose.pose.orientation
-        yaw = atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+        yaw, _, _ = quaternion_to_euler(msg.pose.pose.orientation)
         if not self.odom_params_initialised:
             if yaw < 0:
                 yaw = 2 * pi + yaw

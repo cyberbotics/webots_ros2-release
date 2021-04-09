@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2019 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
 """Launch Webots and the controllers."""
 
 import os
+
 import launch
+
 from webots_ros2_core.utils import ControllerLauncher
 from webots_ros2_core.webots_launcher import WebotsLauncher
+
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -29,36 +32,32 @@ def generate_launch_description():
 
     # Controller nodes
     synchronization = launch.substitutions.LaunchConfiguration('synchronization', default=False)
-    abb_controller = ControllerLauncher(
-        package='webots_ros2_core',
-        executable='webots_robotic_arm_node',
-        arguments=['--webots-robot-name=abbirb4600'],
-        namespace='abb',
-        parameters=[{'synchronization': synchronization}],
-        output='screen'
-    )
-    ure5_controller = ControllerLauncher(
-        package='webots_ros2_core',
-        executable='webots_robotic_arm_node',
-        arguments=['--webots-robot-name=UR5e'],
-        namespace='ur',
-        parameters=[{'synchronization': synchronization}],
-        output='screen'
-    )
-
+    AbbController = ControllerLauncher(package='webots_ros2_core',
+                                       node_executable='webots_robotic_arm_node',
+                                       # this argument should match the 'name' field
+                                       # of the robot in Webots
+                                       arguments=['--webots-robot-name=abbirb4600'],
+                                       node_namespace='abb',
+                                       parameters=[{'synchronization': synchronization}],
+                                       output='screen')
+    Ure5controller = ControllerLauncher(package='webots_ros2_core',
+                                        node_executable='webots_robotic_arm_node',
+                                        # this argument should match the 'name' field
+                                        # of the robot in Webots
+                                        arguments=['--webots-robot-name=UR5e'],
+                                        node_namespace='ur',
+                                        parameters=[{'synchronization': synchronization}],
+                                        output='screen')
     # Control nodes
-    armed_robots_ur = ControllerLauncher(
-        package='webots_ros2_demos',
-        executable='armed_robots_ur',
-        output='screen'
-    )
-    armed_robots_abb = ControllerLauncher(
-        package='webots_ros2_demos',
-        executable='armed_robots_abb',
-        output='screen'
-    )
+    armedRobotsUr = ControllerLauncher(package='webots_ros2_demos',
+                                       node_executable='armed_robots_ur',
+                                       output='screen')
+    armedRobotsAbb = ControllerLauncher(package='webots_ros2_demos',
+                                        node_executable='armed_robots_abb',
+                                        output='screen')
     return launch.LaunchDescription([
-        webots, abb_controller, ure5_controller, armed_robots_ur, armed_robots_abb,
+        webots, AbbController, Ure5controller, armedRobotsUr, armedRobotsAbb,
+        # Shutdown launch when Webots exits.
         launch.actions.RegisterEventHandler(
             event_handler=launch.event_handlers.OnProcessExit(
                 target_action=webots,

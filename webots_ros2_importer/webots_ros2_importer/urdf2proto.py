@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2019 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import tempfile
 from ament_index_python.packages import get_package_share_directory
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'urdf2webots'))
-#  deepcode ignore C0413: We need to import the library first
 from urdf2webots.importer import convert2urdf   # noqa: E402
 
 
@@ -54,7 +53,7 @@ def main(args=None, input=None):
                         'the first 3 joints of your robot to the specified values, '
                         'and leave the rest with their default value.')
     # use 'parse_known_args' because ROS2 adds a lot of internal arguments
-    arguments, _ = parser.parse_known_args()
+    arguments, unknown = parser.parse_known_args()
     file = os.path.abspath(input) if input is not None else os.path.abspath(arguments.inFile)
     if not file:
         sys.exit('Input file not specified (should be specified with the "--input" argument).')
@@ -66,24 +65,24 @@ def main(args=None, input=None):
     with open(file, 'r') as f:
         content = f.read()
     # look for package-relative file path and replace them
-    urdf_file = file
-    generated_file = False
+    urdfFile = file
+    generatedFile = False
     packages = re.findall(r'filename="package:\/\/([^\/]*)', content)
     for package in set(packages):  # do the replacement
-        package_path = ''
+        packagePath = ''
         try:
-            package_path = get_package_share_directory(package)
+            packagePath = get_package_share_directory(package)
         except LookupError:
             sys.exit('This urdf depends on the "%s" package, but this package could not be found' %
                      package)
-        content = content.replace('package://%s' % package, '%s' % package_path)
+        content = content.replace('package://%s' % package, '%s' % packagePath)
     if packages:  # some package-relative file paths have been found
         # generate a temporary file with the replacement content
-        urdf_file = tempfile.mkstemp(suffix='.urdf')[1]
-        generated_file = True
-        with open(urdf_file, 'w') as f:
+        urdfFile = tempfile.mkstemp(suffix='.urdf')[1]
+        generatedFile = True
+        with open(urdfFile, 'w') as f:
             f.write(content)
-    convert2urdf(inFile=urdf_file,
+    convert2urdf(inFile=urdfFile,
                  outFile=arguments.outFile,
                  normal=arguments.normal,
                  boxCollision=arguments.boxCollision,
@@ -94,8 +93,8 @@ def main(args=None, input=None):
                  initRotation=arguments.initRotation,
                  initPos=arguments.initPos)
     # remove temporary file
-    if generated_file:
-        os.remove(urdf_file)
+    if generatedFile:
+        os.remove(urdfFile)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2020 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,12 +102,7 @@ class CameraDevice(SensorDevice):
             msg.width = self._wb_device.getWidth()
             msg.is_bigendian = False
             msg.step = self._wb_device.getWidth() * 4
-            # We pass `data` directly to we avoid using `data` setter.
-            # Otherwise ROS2 converts data to `array.array` which slows down the simulation as it copies memory internally.
-            # Both, `bytearray` and `array.array`, implement Python buffer protocol, so we should not see unpredictable
-            # behavior.
-            # deepcode ignore W0212: Avoid conversion from `bytearray` to `array.array`.
-            msg._data = self._wb_device.getImage()
+            msg.data = self._wb_device.getImage()
             msg.encoding = 'bgra8'
             self._image_publisher.publish(msg)
         else:

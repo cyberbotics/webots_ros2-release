@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 1996-2021 Cyberbotics Ltd.
+# Copyright 1996-2020 Cyberbotics Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 import os
 import json
-from math import pi, sin, cos
+from math import pi
 import launch
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
@@ -28,7 +28,7 @@ from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
-from geometry_msgs.msg import Quaternion
+from webots_ros2_core.math_utils import euler_to_quaternion
 
 
 class WaypointCollection:
@@ -40,10 +40,8 @@ class WaypointCollection:
 
     def add(self, position=None, orientation=None):
         if orientation is not None:
-            q = Quaternion()
-            q.z = sin(orientation / 2)
-            q.w = cos(orientation / 2)
-            orientation = {'x': q.x, 'y': q.y, 'z': q.z, 'w': q.w}
+            quaternion = euler_to_quaternion(0, 0, orientation)
+            orientation = {'x': quaternion.x, 'y': quaternion.y, 'z': quaternion.z, 'w': quaternion.w}
         if position is not None:
             position = {'x': position[0], 'y': position[1], 'z': 0}
         if position is None:
@@ -141,7 +139,7 @@ def generate_launch_description():
 
     mapper = Node(
         package='webots_ros2_epuck',
-        executable='simple_mapper',
+        node_executable='simple_mapper',
         output='screen',
         parameters=[{'use_sim_time': use_sim_time, 'fill_map': True}],
     )
