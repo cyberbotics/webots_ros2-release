@@ -17,13 +17,15 @@
 """Auto discover Webots devices and publish suitable ROS2 topics."""
 
 from .camera_device import CameraDevice
+from .range_finder_device import RangeFinderDevice
 from .led_device import LEDDevice
 from .lidar_device import LidarDevice
 from .distance_sensor_device import DistanceSensorDevice
 from .light_sensor_device import LightSensorDevice
 from .robot_device import RobotDevice
 from .imu_device import ImuDevice
-from webots_ros2_core.webots_controller import Node
+from .gps_device import GpsDevice
+from webots_ros2_core.webots.controller import Node
 
 
 class DeviceManager:
@@ -45,6 +47,8 @@ class DeviceManager:
             # Create ROS2 wrapped device
             if wb_device.getNodeType() == Node.CAMERA:
                 device = CameraDevice(node, device_key, wb_device, self.__config.get(device_key, None))
+            if wb_device.getNodeType() == Node.RANGE_FINDER:
+                device = RangeFinderDevice(node, device_key, wb_device, self.__config.get(device_key, None))
             elif wb_device.getNodeType() == Node.LED:
                 device = LEDDevice(node, device_key, wb_device, self.__config.get(device_key, None))
             elif wb_device.getNodeType() == Node.LIDAR:
@@ -53,6 +57,8 @@ class DeviceManager:
                 device = DistanceSensorDevice(node, device_key, wb_device, self.__config.get(device_key, None))
             elif wb_device.getNodeType() == Node.LIGHT_SENSOR:
                 device = LightSensorDevice(node, device_key, wb_device, self.__config.get(device_key, None))
+            elif wb_device.getNodeType() == Node.GPS:
+                device = GpsDevice(node, device_key, wb_device, self.__config.get(device_key, None))
 
             # Add device to the list
             self.__wb_devices[device_key] = wb_device
