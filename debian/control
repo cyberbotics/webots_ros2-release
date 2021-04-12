@@ -1,0 +1,12 @@
+Source: ros-foxy-webots-ros2-tutorials
+Section: misc
+Priority: optional
+Maintainer: Soft_illusion <harsh.b.kakashaniya@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-foxy-ament-copyright, ros-foxy-ament-flake8, ros-foxy-ament-pep257, ros-foxy-ros-workspace, python3-all, python3-setuptools
+Homepage: https://www.youtube.com/c/soft-illusion
+Standards-Version: 3.9.2
+
+Package: ros-foxy-webots-ros2-tutorials
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-foxy-builtin-interfaces, ros-foxy-geometry-msgs, ros-foxy-rclpy, ros-foxy-std-msgs, ros-foxy-webots-ros2-core, ros-foxy-ros-workspace
+Description: This package is made to aid youtube Webots_ROS2 tutorial series
