@@ -91,15 +91,15 @@ tracks:
       :{release_inc} --os-name fedora
     - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
       :{release_inc} --os-name rhel
-    devel_branch: master
+    devel_branch: rolling
     last_release: affcdbc0f0cfdd473437d0985d3484285ed3c84f
     last_version: 1.0.2
     name: webots_ros2
     patches: null
     release_inc: '3'
     release_repo_url: null
-    release_tag: affcdbc0f0cfdd473437d0985d3484285ed3c84f
+    release_tag: rolling
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.0.2
+    version: 1.0.6
