@@ -1,0 +1,12 @@
+Source: ros-foxy-webots-ros2-msgs
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-foxy-ament-cmake, ros-foxy-ament-lint-auto, ros-foxy-ament-lint-common, ros-foxy-builtin-interfaces, ros-foxy-geometry-msgs, ros-foxy-rosidl-default-generators, ros-foxy-std-msgs, ros-foxy-vision-msgs, ros-foxy-ros-workspace, ros-foxy-rosidl-typesupport-fastrtps-c, ros-foxy-rosidl-typesupport-fastrtps-cpp, ros-foxy-rosidl-typesupport-connext-c, ros-foxy-rosidl-typesupport-connext-cpp
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-foxy-webots-ros2-msgs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-foxy-builtin-interfaces, ros-foxy-geometry-msgs, ros-foxy-rosidl-default-runtime, ros-foxy-std-msgs, ros-foxy-vision-msgs, ros-foxy-ros-workspace
+Description: Services and Messages of the webots_ros2 packages.
