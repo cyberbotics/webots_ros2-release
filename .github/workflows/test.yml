@@ -1,22 +1,21 @@
 name: CI
 
-on: 
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+on:
+  push:
 
 jobs:
   industrial_ci:
     strategy:
+      fail-fast: false
       matrix:
-        env:
-          - {ROS_DISTRO: eloquent, ROS_REPO: testing}
-          - {ROS_DISTRO: eloquent, ROS_REPO: main}
-          - {ROS_DISTRO: foxy, ROS_REPO: testing}
-          - {ROS_DISTRO: foxy, ROS_REPO: main}
+        ROS_REPO: [main, testing]
+        ROS_DISTRO: [rolling]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
         with:
          submodules: recursive
       - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{matrix.env}}
+        env: 
+          ROS_REPO: ${{matrix.ROS_REPO}}
+          ROS_DISTRO: ${{matrix.ROS_DISTRO}}
