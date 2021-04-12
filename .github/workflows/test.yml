@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
 
 jobs:
   industrial_ci:
@@ -10,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         ROS_REPO: [main, testing]
-        ROS_DISTRO: [foxy]
+        ROS_DISTRO: [rolling]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
