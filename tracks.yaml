@@ -66,7 +66,7 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: foxy
     last_release: foxy
-    last_version: 1.0.6
+    last_version: 1.1.0
     name: webots_ros2
     patches: null
     release_inc: '1'
