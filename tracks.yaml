@@ -64,18 +64,18 @@ tracks:
       :{release_inc} --os-name fedora
     - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
       :{release_inc} --os-name rhel
-    devel_branch: foxy
+    devel_branch: master
     last_release: foxy
     last_version: 1.1.0
     name: webots_ros2
     patches: null
     release_inc: '1'
     release_repo_url: null
-    release_tag: foxy
+    release_tag: 1.1.1
     ros_distro: foxy
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.1.0
+    version: 1.1.1
   rolling:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
