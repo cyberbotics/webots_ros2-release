@@ -1,4 +1,5 @@
 """Import modules."""
+import math
 import os
 import sys
 import struct
@@ -218,6 +219,7 @@ class Link():
         self.inertia = Inertia()
         self.visual = []
         self.collision = []
+        self.forceSensor = False
 
 
 class Joint():
@@ -252,23 +254,78 @@ class IMU():
     def export(self, file, indentationLevel):
         """Export this IMU."""
         indent = '  '
+
+        # export InertialUnit
+        file.write(indentationLevel * indent + 'InertialUnit {\n')
+        file.write(indentationLevel * indent + '  name "%s inertial"\n' % self.name)
+        if self.gaussianNoise > 0:
+            file.write(indentationLevel * indent + '  noise %lf\n' % (self.gaussianNoise / (math.pi/2)))
+        file.write(indentationLevel * indent + '}\n')
+
+        # export Accelerometer
         file.write(indentationLevel * indent + 'Accelerometer {\n')
         file.write(indentationLevel * indent + '  name "%s accelerometer"\n' % self.name)
         if self.gaussianNoise > 0:
             file.write(indentationLevel * indent + '  lookupTable [-100 -100 %lf, 100 100 %lf]\n' %
                        (-self.gaussianNoise / 100.0, self.gaussianNoise / 100.0))
         file.write(indentationLevel * indent + '}\n')
+
+        # export Gyro
         file.write(indentationLevel * indent + 'Gyro {\n')
         file.write(indentationLevel * indent + '  name "%s gyro"\n' % self.name)
         if self.gaussianNoise > 0:
             file.write(indentationLevel * indent + '  lookupTable [-100 -100 %lf, 100 100 %lf]\n' %
                        (-self.gaussianNoise / 100.0, self.gaussianNoise / 100.0))
         file.write(indentationLevel * indent + '}\n')
+
+        # export Compass
         file.write(indentationLevel * indent + 'Compass {\n')
         file.write(indentationLevel * indent + '  name "%s compass"\n' % self.name)
         if self.gaussianNoise > 0:
             file.write(indentationLevel * indent + '  lookupTable [-1 -1 %lf, 1 1 %lf]\n' %
-                       -self.gaussianNoise, self.gaussianNoise)
+                       (-self.gaussianNoise, self.gaussianNoise))
+        file.write(indentationLevel * indent + '}\n')
+
+
+class P3D():
+    """Define P3D (ground truth pose)."""
+
+    list = []
+
+    def __init__(self):
+        """Initializatization."""
+        self.name = 'p3d'
+        self.gaussianNoise = 0
+        self.noiseCorrelation = 0
+        self.speedNoise = 0
+        self.parentLink = None
+
+    def export(self, file, indentationLevel):
+        """Export this P3D."""
+        indent = '  '
+
+        # export GPS
+        file.write(indentationLevel * indent + 'GPS {\n')
+        file.write(indentationLevel * indent + '  name "%s gps"\n' % self.name)
+        if self.noiseCorrelation > 0:
+            file.write(indentationLevel * indent + '  noiseCorrelation %lf\n' % self.noiseCorrelation)
+        if self.speedNoise > 0:
+            file.write(indentationLevel * indent + '  speedNoise %lf\n' % self.speedNoise)
+        file.write(indentationLevel * indent + '}\n')
+
+        # export InertialUnit
+        file.write(indentationLevel * indent + 'InertialUnit {\n')
+        file.write(indentationLevel * indent + '  name "%s inertial"\n' % self.name)
+        if self.gaussianNoise > 0:
+            file.write(indentationLevel * indent + '  noise %lf\n' % (self.gaussianNoise / (math.pi/2)))
+        file.write(indentationLevel * indent + '}\n')
+
+        # export Gyro
+        file.write(indentationLevel * indent + 'Gyro {\n')
+        file.write(indentationLevel * indent + '  name "%s gyro"\n' % self.name)
+        if self.gaussianNoise > 0:
+            file.write(indentationLevel * indent + '  lookupTable [-100 -100 %lf, 100 100 %lf]\n' %
+                       (-self.gaussianNoise / 100.0, self.gaussianNoise / 100.0))
         file.write(indentationLevel * indent + '}\n')
 
 
@@ -289,6 +346,8 @@ class Camera():
         """Export this camera."""
         indent = '  '
         file.write(indentationLevel * indent + 'Camera {\n')
+        # rotation to convert from REP103 to webots viewport
+        file.write(indentationLevel * indent + '  rotation 1.0 0.0 0.0 3.141591\n')
         file.write(indentationLevel * indent + '  name "%s"\n' % self.name)
         if self.fov:
             file.write(indentationLevel * indent + '  fieldOfView %lf\n' % self.fov)
@@ -543,11 +602,11 @@ def getColladaMesh(filename, node, link):
                             for val in data._normal_index:
                                 visual.geometry.trimesh.normalIndex.append(val)
                 if data.material and data.material.effect:
-                    if data.material.effect.emission:
+                    if data.material.effect.emission and isinstance(data.material.effect.emission, tuple):
                         visual.material.emission = colorVector2Instance(data.material.effect.emission)
-                    if data.material.effect.ambient:
+                    if data.material.effect.ambient and isinstance(data.material.effect.ambient, tuple):
                         visual.material.ambient = colorVector2Instance(data.material.effect.ambient)
-                    if data.material.effect.specular:
+                    if data.material.effect.specular and isinstance(data.material.effect.specular, tuple):
                         visual.material.specular = colorVector2Instance(data.material.effect.specular)
                     if data.material.effect.shininess:
                         visual.material.shininess = data.material.effect.shininess
@@ -577,6 +636,9 @@ def getColladaMesh(filename, node, link):
                                             except IOError:
                                                 visual.material.texture = ""
                                                 print('failed to open ' + os.path.join(dirname, file))
+                            else:
+                                visual.material.diffuse = colorVector2Instance([1.0, 1.0, 1.0, 1.0])
+
                 link.visual.append(visual)
     else:
         for geometry in list(colladaMesh.scene.objects('geometry')):
@@ -923,6 +985,8 @@ def isRootLink(link, childList):
 
 def parseGazeboElement(element, parentLink, linkList):
     """Parse a Gazebo element."""
+    if element.hasAttribute("reference") and any([link.name == element.getAttribute('reference') for link in linkList]):
+        parentLink = element.getAttribute("reference")
     for plugin in element.getElementsByTagName('plugin'):
         if plugin.hasAttribute('filename') and plugin.getAttribute('filename').startswith('libgazebo_ros_imu'):
             imu = IMU()
@@ -932,13 +996,27 @@ def parseGazeboElement(element, parentLink, linkList):
             if hasElement(plugin, 'gaussianNoise'):
                 imu.gaussianNoise = float(plugin.getElementsByTagName('gaussianNoise')[0].firstChild.nodeValue)
             IMU.list.append(imu)
+        elif plugin.hasAttribute('filename') and plugin.getAttribute('filename').startswith('libgazebo_ros_f3d'):
+            if hasElement(plugin, "bodyName"):
+                name = plugin.getElementsByTagName('bodyName')[0].firstChild.nodeValue
+                for link in linkList:
+                    if link.name == name:
+                        link.forceSensor = True
+                        break
+        elif plugin.hasAttribute('filename') and plugin.getAttribute('filename').startswith('libgazebo_ros_p3d'):
+            p3d = P3D()
+            p3d.parentLink = parentLink
+            if hasElement(plugin, 'topicName'):
+                p3d.name = plugin.getElementsByTagName('topicName')[0].firstChild.nodeValue
+            if hasElement(plugin, "xyzOffsets"):
+                print('\033[1;33mWarning: URDF parser cannot handle \"xyzOffsets\" from p3d!\033[0m')
+            if hasElement(plugin, "rpyOffsets"):
+                print('\033[1;33mWarning: URDF parser cannot handle \"rpyOffsets\" from p3d!\033[0m')
+            P3D.list.append(p3d)
     for sensorElement in element.getElementsByTagName('sensor'):
-        sensorElement = element.getElementsByTagName('sensor')[0]
         if sensorElement.getAttribute('type') == 'camera':
             camera = Camera()
             camera.parentLink = parentLink
-            if element.hasAttribute('reference') and element.getAttribute('reference') in linkList:
-                camera.parentLink = element.getAttribute('reference')
             camera.name = sensorElement.getAttribute('name')
             if hasElement(sensorElement, 'camera'):
                 cameraElement = sensorElement.getElementsByTagName('camera')[0]
@@ -959,11 +1037,9 @@ def parseGazeboElement(element, parentLink, linkList):
                 if hasElement(noiseElement, 'stddev'):
                     camera.noise = float(noiseElement.getElementsByTagName('stddev')[0].firstChild.nodeValue)
             Camera.list.append(camera)
-        elif sensorElement.getAttribute('type') == 'ray':
+        elif sensorElement.getAttribute('type') == 'ray' or sensorElement.getAttribute('type') == 'gpu_ray':
             lidar = Lidar()
             lidar.parentLink = parentLink
-            if element.hasAttribute('reference') and element.getAttribute('reference') in linkList:
-                lidar.parentLink = element.getAttribute('reference')
             lidar.name = sensorElement.getAttribute('name')
             if hasElement(sensorElement, 'ray'):
                 rayElement = sensorElement.getElementsByTagName('ray')[0]
@@ -979,13 +1055,13 @@ def parseGazeboElement(element, parentLink, linkList):
                             maxAngle = float(horizontalElement.getElementsByTagName('max_angle')[0].firstChild.nodeValue)
                             lidar.fov = maxAngle - minAngle
                     if hasElement(scanElement, 'vertical'):
-                        horizontalElement = scanElement.getElementsByTagName('horizontal')[0]
-                        if hasElement(horizontalElement, 'samples'):
+                        verticalElement = scanElement.getElementsByTagName('vertical')[0]
+                        if hasElement(verticalElement, 'samples'):
                             lidar.numberOfLayers = \
-                              int(horizontalElement.getElementsByTagName('samples')[0].firstChild.nodeValue)
-                        if hasElement(horizontalElement, 'min_angle') and hasElement(horizontalElement, 'max_angle'):
-                            minAngle = float(horizontalElement.getElementsByTagName('min_angle')[0].firstChild.nodeValue)
-                            maxAngle = float(horizontalElement.getElementsByTagName('max_angle')[0].firstChild.nodeValue)
+                              int(verticalElement.getElementsByTagName('samples')[0].firstChild.nodeValue)
+                        if hasElement(verticalElement, 'min_angle') and hasElement(verticalElement, 'max_angle'):
+                            minAngle = float(verticalElement.getElementsByTagName('min_angle')[0].firstChild.nodeValue)
+                            maxAngle = float(verticalElement.getElementsByTagName('max_angle')[0].firstChild.nodeValue)
                             lidar.verticalFieldOfView = maxAngle - minAngle
                 if hasElement(rayElement, 'range'):
                     rangeElement = rayElement.getElementsByTagName('range')[0]
