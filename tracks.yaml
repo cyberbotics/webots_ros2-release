@@ -93,7 +93,7 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: rolling
-    last_version: 1.0.6
+    last_version: 1.1.1
     name: webots_ros2
     patches: null
     release_inc: '1'
