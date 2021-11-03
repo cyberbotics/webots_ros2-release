@@ -138,8 +138,16 @@ class Driver(controller.Supervisor):
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
+    if _newclass:
+        getDriverInstance = staticmethod(_vehicle.Driver_getDriverInstance)
+    else:
+        getDriverInstance = _vehicle.Driver_getDriverInstance
     __swig_destroy__ = _vehicle.delete_Driver
     __del__ = lambda self: None
+    if _newclass:
+        isInitialisationPossible = staticmethod(_vehicle.Driver_isInitialisationPossible)
+    else:
+        isInitialisationPossible = _vehicle.Driver_isInitialisationPossible
 
     def step(self):
         return _vehicle.Driver_step(self)
@@ -226,6 +234,14 @@ class Driver(controller.Supervisor):
         return _vehicle.Driver_getWipersMode(self)
 Driver_swigregister = _vehicle.Driver_swigregister
 Driver_swigregister(Driver)
+
+def Driver_getDriverInstance():
+    return _vehicle.Driver_getDriverInstance()
+Driver_getDriverInstance = _vehicle.Driver_getDriverInstance
+
+def Driver_isInitialisationPossible():
+    return _vehicle.Driver_isInitialisationPossible()
+Driver_isInitialisationPossible = _vehicle.Driver_isInitialisationPossible
 
 class Car(Driver):
     __swig_setmethods__ = {}
