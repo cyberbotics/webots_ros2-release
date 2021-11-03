@@ -93,7 +93,15 @@ class Driver(controller.Supervisor):
 
     def __init__(self):
         _vehicle.Driver_swiginit(self, _vehicle.new_Driver())
+
+    @staticmethod
+    def getDriverInstance():
+        return _vehicle.Driver_getDriverInstance()
     __swig_destroy__ = _vehicle.delete_Driver
+
+    @staticmethod
+    def isInitialisationPossible():
+        return _vehicle.Driver_isInitialisationPossible()
 
     def step(self):
         return _vehicle.Driver_step(self)
@@ -181,6 +189,12 @@ class Driver(controller.Supervisor):
 
 # Register Driver in _vehicle:
 _vehicle.Driver_swigregister(Driver)
+
+def Driver_getDriverInstance():
+    return _vehicle.Driver_getDriverInstance()
+
+def Driver_isInitialisationPossible():
+    return _vehicle.Driver_isInitialisationPossible()
 
 class Car(Driver):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
