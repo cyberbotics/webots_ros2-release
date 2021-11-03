@@ -1,0 +1,60 @@
+ros-foxy-webots-ros2 (1.1.2-2focal) focal; urgency=high
+
+  * Adapted the 'webots_ros2_driver' package to be also a python alternative to the 'webots_ros2_core' package.
+  * Replaced the use of the deprecated 'webots_ros2_core' package by the 'webots_ros2_driver' package.
+  * Removed the 'webots_ros2_example', 'webots_ros2_tutorials' and 'webots_ros2_abb' packages.
+  * Replaced the 'webots_ros2_tiago' package.
+
+ -- Cyberbotics <support@cyberbotics.com>  Tue, 02 Nov 2021 23:00:00 -0000
+
+ros-foxy-webots-ros2 (1.1.0-2focal) focal; urgency=high
+
+  * Included the 'webots_ros2_driver' package as a C++ alternative to the 'webots_ros2_core' package.
+  * Integrated ros2_control.
+  * Included a Mavic drone simulation example
+
+ -- Cyberbotics <support@cyberbotics.com>  Sun, 18 Jul 2021 22:00:00 -0000
+
+ros-foxy-webots-ros2 (1.0.5-2focal) focal; urgency=high
+
+  * Improved performance of the camera.
+  * Replaced tkinter with simple command-line tools.
+  * Fixed usage on Windows.
+  * Introduced notion of minimum and target Webots versions.
+
+ -- Cyberbotics <support@cyberbotics.com>  Thu, 07 Jan 2021 23:00:00 -0000
+
+ros-foxy-webots-ros2 (1.0.1-2focal) focal; urgency=high
+
+  * Removed the 'webots_ros2_desktop' package.
+  * Added missing 'webots_ros2_demos', 'webots_ros2_epuck' and 'webots_ros2_msgs' packages as dependencies.
+
+ -- Cyberbotics <support@cyberbotics.com>  Thu, 17 Sep 2020 22:00:00 -0000
+
+ros-foxy-webots-ros2 (1.0.0-2focal) focal; urgency=high
+
+  * Improved support for macOS
+
+ -- Cyberbotics <support@cyberbotics.com>  Mon, 31 Aug 2020 22:00:00 -0000
+
+ros-foxy-webots-ros2 (0.0.3-2focal) focal; urgency=high
+
+  * Updated to Webots R2020a
+
+ -- Cyberbotics <support@cyberbotics.com>  Sun, 14 Jun 2020 22:00:00 -0000
+
+ros-foxy-webots-ros2 (0.0.2-2focal) focal; urgency=high
+
+  * Moved sources to cyberbotics/webots_ros2 (https://github.com/cyberbotics/webots_ros2)
+  * Added a 'webots_ros2_msgs', 'webots_ros2_core', 'webots_ros2_desktop', 'webots_ros2_examples' 'webots_ros2_abb' and 'webots_ros2_universal_robot' packages
+  * Added support for ABB robots.
+
+ -- Cyberbotics <support@cyberbotics.com>  Sun, 22 Sep 2019 22:00:00 -0000
+
+ros-foxy-webots-ros2 (0.0.1-2focal) focal; urgency=high
+
+  * Initial version
+
+ -- Cyberbotics <support@cyberbotics.com>  Thu, 08 Aug 2019 22:00:00 -0000
+
+
