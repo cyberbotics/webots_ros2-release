@@ -1,0 +1,12 @@
+Source: ros-foxy-webots-ros2-epuck
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-foxy-ament-copyright, ros-foxy-ament-flake8, ros-foxy-ament-pep257, ros-foxy-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-foxy-webots-ros2-epuck
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-foxy-builtin-interfaces, ros-foxy-controller-manager, ros-foxy-diff-drive-controller, ros-foxy-geometry-msgs, ros-foxy-joint-state-broadcaster, ros-foxy-nav-msgs, ros-foxy-rclpy, ros-foxy-robot-state-publisher, ros-foxy-rviz2, ros-foxy-sensor-msgs, ros-foxy-std-msgs, ros-foxy-tf2-ros, ros-foxy-webots-ros2-control, ros-foxy-webots-ros2-driver, ros-foxy-webots-ros2-msgs, ros-foxy-ros-workspace
+Description: E-puck2 driver for Webots simulated robot
