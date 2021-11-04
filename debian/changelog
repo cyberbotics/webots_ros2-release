@@ -1,0 +1,13 @@
+ros-galactic-webots-ros2-turtlebot (1.1.2-2focal) focal; urgency=high
+
+  * Utilize the 'webots_ros2_driver' and 'ros2_control' instead of 'webots_ros2_core'.
+
+ -- Cyberbotics <support@cyberbotics.com>  Wed, 03 Nov 2021 07:00:00 -0000
+
+ros-galactic-webots-ros2-turtlebot (1.0.3-2focal) focal; urgency=high
+
+  * Initial version
+
+ -- Cyberbotics <support@cyberbotics.com>  Mon, 23 Sep 2019 07:00:00 -0000
+
+

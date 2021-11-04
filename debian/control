@@ -1,0 +1,12 @@
+Source: ros-galactic-webots-ros2-turtlebot
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-galactic-ament-copyright, ros-galactic-ament-flake8, ros-galactic-ament-pep257, ros-galactic-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-galactic-webots-ros2-turtlebot
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-galactic-builtin-interfaces, ros-galactic-controller-manager, ros-galactic-diff-drive-controller, ros-galactic-joint-state-broadcaster, ros-galactic-rclpy, ros-galactic-robot-state-publisher, ros-galactic-tf2-ros, ros-galactic-webots-ros2-control, ros-galactic-webots-ros2-driver, ros-galactic-ros-workspace
+Description: TurtleBot3 Burger robot ROS2 interface for Webots.
