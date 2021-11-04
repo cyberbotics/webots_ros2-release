@@ -1,0 +1,12 @@
+Source: ros-rolling-webots-ros2
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-rolling-ament-copyright, ros-rolling-ament-flake8, ros-rolling-ament-pep257, ros-rolling-webots-ros2-tests, ros-rolling-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-rolling-webots-ros2
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-rolling-builtin-interfaces, ros-rolling-rclpy, ros-rolling-std-msgs, ros-rolling-webots-ros2-control, ros-rolling-webots-ros2-core, ros-rolling-webots-ros2-driver, ros-rolling-webots-ros2-epuck, ros-rolling-webots-ros2-importer, ros-rolling-webots-ros2-mavic, ros-rolling-webots-ros2-msgs, ros-rolling-webots-ros2-tesla, ros-rolling-webots-ros2-tiago, ros-rolling-webots-ros2-turtlebot, ros-rolling-webots-ros2-universal-robot, ros-rolling-ros-workspace
+Description: Interface between Webots and ROS2
