@@ -1,0 +1,12 @@
+Source: ros-galactic-webots-ros2-tests
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-galactic-ament-copyright, ros-galactic-ament-flake8, ros-galactic-ament-pep257, ros-galactic-geometry-msgs, ros-galactic-launch, ros-galactic-launch-testing, ros-galactic-launch-testing-ament-cmake, ros-galactic-launch-testing-ros, ros-galactic-rclpy, ros-galactic-ros2bag, ros-galactic-rosbag2-storage-default-plugins, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-std-srvs, ros-galactic-tf2-ros, ros-galactic-webots-ros2-driver, ros-galactic-webots-ros2-epuck, ros-galactic-webots-ros2-mavic, ros-galactic-webots-ros2-tesla, ros-galactic-webots-ros2-tiago, ros-galactic-webots-ros2-turtlebot, ros-galactic-webots-ros2-universal-robot, ros-galactic-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-galactic-webots-ros2-tests
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-galactic-ros-workspace
+Description: System tests for `webots_ros2` packages.
