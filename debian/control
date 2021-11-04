@@ -1,0 +1,12 @@
+Source: ros-galactic-webots-ros2-tesla
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-galactic-ament-copyright, ros-galactic-ament-flake8, ros-galactic-ament-pep257, ros-galactic-ros-workspace, python3-all, python3-setuptools
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-galactic-webots-ros2-tesla
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, python3-numpy, python3-opencv, ros-galactic-ackermann-msgs, ros-galactic-builtin-interfaces, ros-galactic-rclpy, ros-galactic-webots-ros2-core, ros-galactic-ros-workspace
+Description: Tesla ROS2 interface for Webots.
