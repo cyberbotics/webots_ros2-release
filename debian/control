@@ -1,0 +1,12 @@
+Source: ros-galactic-webots-ros2-driver
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-ament-cmake-python, ros-galactic-ament-lint-auto, ros-galactic-ament-lint-common, ros-galactic-pluginlib, ros-galactic-python-cmake-module, ros-galactic-rclcpp, ros-galactic-rclcpp-lifecycle, ros-galactic-rclpy, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-tf2-ros, ros-galactic-tinyxml2-vendor, ros-galactic-vision-msgs, ros-galactic-webots-ros2-msgs, ros-galactic-ros-workspace
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-galactic-webots-ros2-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-pluginlib, ros-galactic-rclcpp, ros-galactic-rclcpp-lifecycle, ros-galactic-rclpy, ros-galactic-sensor-msgs, ros-galactic-std-msgs, ros-galactic-tf2-ros, ros-galactic-tinyxml2-vendor, ros-galactic-vision-msgs, ros-galactic-webots-ros2-msgs, ros-galactic-ros-workspace
+Description: Implementation of the Webots - ROS 2 interface
