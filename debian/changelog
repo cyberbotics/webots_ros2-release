@@ -1,0 +1,13 @@
+ros-rolling-webots-ros2-control (1.1.2-2focal) focal; urgency=high
+
+  * Added code compliance for 'ROS Foxy'.
+
+ -- Cyberbotics <support@cyberbotics.com>  Wed, 03 Nov 2021 07:00:00 -0000
+
+ros-rolling-webots-ros2-control (1.1.0-2focal) focal; urgency=high
+
+  * Initial version
+
+ -- Cyberbotics <support@cyberbotics.com>  Mon, 19 Jul 2021 07:00:00 -0000
+
+
