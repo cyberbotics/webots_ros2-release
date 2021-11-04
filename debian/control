@@ -1,0 +1,12 @@
+Source: ros-galactic-webots-ros2-msgs
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-ament-lint-auto, ros-galactic-ament-lint-common, ros-galactic-builtin-interfaces, ros-galactic-geometry-msgs, ros-galactic-rosidl-default-generators, ros-galactic-std-msgs, ros-galactic-vision-msgs, ros-galactic-ros-workspace, ros-galactic-rosidl-typesupport-fastrtps-c, ros-galactic-rosidl-typesupport-fastrtps-cpp
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-galactic-webots-ros2-msgs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-builtin-interfaces, ros-galactic-geometry-msgs, ros-galactic-rosidl-default-runtime, ros-galactic-std-msgs, ros-galactic-vision-msgs, ros-galactic-ros-workspace
+Description: Services and Messages of the webots_ros2 packages.
