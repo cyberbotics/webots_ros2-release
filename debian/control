@@ -1,0 +1,12 @@
+Source: ros-rolling-webots-ros2-driver
+Section: misc
+Priority: optional
+Maintainer: Cyberbotics <support@cyberbotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ament-cmake-python, ros-rolling-ament-lint-auto, ros-rolling-ament-lint-common, ros-rolling-pluginlib, ros-rolling-python-cmake-module, ros-rolling-rclcpp, ros-rolling-rclcpp-lifecycle, ros-rolling-rclpy, ros-rolling-sensor-msgs, ros-rolling-std-msgs, ros-rolling-tf2-ros, ros-rolling-tinyxml2-vendor, ros-rolling-vision-msgs, ros-rolling-webots-ros2-msgs, ros-rolling-ros-workspace
+Homepage: http://wiki.ros.org/webots_ros2
+Standards-Version: 3.9.2
+
+Package: ros-rolling-webots-ros2-driver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-pluginlib, ros-rolling-rclcpp, ros-rolling-rclcpp-lifecycle, ros-rolling-rclpy, ros-rolling-sensor-msgs, ros-rolling-std-msgs, ros-rolling-tf2-ros, ros-rolling-tinyxml2-vendor, ros-rolling-vision-msgs, ros-rolling-webots-ros2-msgs, ros-rolling-ros-workspace
+Description: Implementation of the Webots - ROS 2 interface
