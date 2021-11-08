@@ -66,16 +66,16 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: foxy
-    last_version: 1.1.2
+    last_version: 1.1.3
     name: webots_ros2
     patches: null
     release_inc: '2'
-    release_repo_url: null
-    release_tag: 1.1.2
+    release_repo_url: https://github.com/ros2-gbp/webots_ros2-release.git
+    release_tag: 1.1.3
     ros_distro: foxy
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.1.2
+    version: 1.1.3
   galactic:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
@@ -93,16 +93,16 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: galactic
-    last_version: 1.1.2
+    last_version: 1.1.3
     name: webots_ros2
     patches: null
     release_inc: '2'
-    release_repo_url: null
-    release_tag: 1.1.2
+    release_repo_url: https://github.com/ros2-gbp/webots_ros2-release.git
+    release_tag: 1.1.3
     ros_distro: galactic
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.1.2
+    version: 1.1.3
   rolling:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
@@ -120,13 +120,13 @@ tracks:
       :{release_inc} --os-name rhel
     devel_branch: master
     last_release: rolling
-    last_version: 1.1.2
+    last_version: 1.1.3
     name: webots_ros2
     patches: null
     release_inc: '2'
-    release_repo_url: null
-    release_tag: 1.1.2
+    release_repo_url: https://github.com/ros2-gbp/webots_ros2-release.git
+    release_tag: 1.1.3
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/cyberbotics/webots_ros2.git
-    version: 1.1.2
+    version: 1.1.3
